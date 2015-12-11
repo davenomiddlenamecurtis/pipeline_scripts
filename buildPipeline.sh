@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # script to build and submit pipeline scripts
+# edited on githubs server
 # Usage:
 # Need to set these environment variables:
 # PIPELINENAME - name of pipeline
