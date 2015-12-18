@@ -11,7 +11,7 @@ do
 	if [ $doing -ge $numberToDo ] ; then break; fi
 done
 
-echo SRR1463469_sorted_unique.cleaned.r1.fastq.gz > /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
+# echo SRR1818305_sorted_unique.cleaned.r1.fastq.gz > /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
 # just to check
 
 export PIPELINENAME=moveFastqs
@@ -26,8 +26,8 @@ export PIPELINETEMPFOLDER=/cluster/project8/bipolargenomes/pipelinetempmovefolde
 doing=`cat $IDFILE | wc -l`
 if [ $doing -gt 0 ]
 then
-	bash ~/pipelineScripts/buildPipeline.sh  
-	echo "bash ~/pipelineScripts/setupMoveFiles.sh &> /cluster/project8/bipolargenomes/pipelinetempmovefolder/setupMoveFiles.log " | at now +30 minutes
+	bash ~/pipeline_scripts/buildPipeline.sh  
+	echo "bash ~/pipeline_scripts/setupMoveFiles.sh &> /cluster/project8/bipolargenomes/pipelinetempmovefolder/setupMoveFiles.log " | at now +60 minutes
 else
 	echo All finished > /cluster/project8/bipolargenomes/pipelinetempmovefolder/setupMoveFiles.log 
 fi

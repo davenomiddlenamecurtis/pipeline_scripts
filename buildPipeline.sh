@@ -239,6 +239,8 @@ do
 #$ -e $PIPELINETEMPFOLDER
 #$ -cwd
 " > $scriptname
+# At times the new cluster has produced an error message saying it cannot output to a folder. 
+# At other times it has worked fine.
 	if [ $OLDCLUSTER = yes ]
 	then
 		echo "#$ -l scr=${SCRATCH[$i]}" >> $scriptname
