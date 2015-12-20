@@ -14,14 +14,19 @@ done
 # echo SRR1818305_sorted_unique.cleaned.r1.fastq.gz > /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
 # just to check
 
+export IDFILE=/cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
+export FROMFOLDER=/cluster/project8/bipolargenomes/SSSDNM/fastq
+export TOFOLDER=/cluster/scratch4/rejudcu_scratch/SSSDNM/fastq
+
+export OLDCLUSTER=yes
+export PIPELINETEMPFOLDER=/cluster/project8/bipolargenomes/pipelinetempmovefolder
+export ATTEMPTS=1
+
 export PIPELINENAME=moveFastqs
 export PIPELINESCRIPTSFOLDER=/home/rejudcu/pipelineScripts
 export PIPELINESCRIPTS="moveFiles.sh"
-export IDFILE=/cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
-export OLDCLUSTER=yes
 export PIPELINEHOMEFOLDER=/
-export ATTEMPTS=1
-export PIPELINETEMPFOLDER=/cluster/project8/bipolargenomes/pipelinetempmovefolder
+
 
 doing=`cat $IDFILE | wc -l`
 if [ $doing -gt 0 ]
