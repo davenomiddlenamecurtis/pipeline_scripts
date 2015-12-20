@@ -10,13 +10,13 @@
 TEMPFOLDER cluster/scratch4/rejudcu_scratch/SSSDNM/moveFilesTemp
 
 # INPUTFOLDER is folder where to find input files, relative to $PIPELINEHOMEFOLDERn
-INPUTFOLDER cluster/project8/bipolargenomes/SSSDNM/fastq
+INPUTFOLDER $FROMFOLDER
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
 INPUTFILES $ID
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
-OUTPUTFOLDER cluster/scratch4/rejudcu_scratch/SSSDNM/fastq
+OUTPUTFOLDER $TOFOLDER
 
 # OUTPUTFILES is list of output files in $PIPELINEHOMEFOLDER/$OUTPUTFOLDER (usually will have $ID in it)
 # these are all the files which should exist by the time this stage of the pipeline is complete
@@ -51,6 +51,28 @@ if [ $PIPELINEHOMEFOLDER |= / ]
 then
 	echo PIPELINEHOMEFOLDER must be /
 	exit
+fi
+
+if [ -z $FROMFOLDER -o -z $TOFOLDER ]
+then
+	echo must set FROMFOLDER and TOFOLDER
+	exit
+fi
+
+if [ ! -e /$FROMFOLDER ]
+then
+	echo /FROMFOLDER /$FROMFOLDER does not exist 
+	exit
+fi
+
+if [ ! -e /$TOFOLDER ]
+then
+	mkdir /$TOFOLDER 
+	if [ ! -e /$TOFOLDER ]
+	then
+		echo could not create /TOFOLDER /$TOFOLDER 
+		exit
+	fi
 fi
 
 cd $PIPELINEHOMEFOLDER/$INPUTFOLDER
