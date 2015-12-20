@@ -53,24 +53,30 @@ then
 	exit
 fi
 
-if [ -z $FROMFOLDER -o -z $TOFOLDER ]
+if [  $INPUTFOLDER = / ]
 then
-	echo must set FROMFOLDER and TOFOLDER
+	echo must set FROMFOLDER in order to set INPUTFOLDER correctly
 	exit
 fi
 
-if [ ! -e /$FROMFOLDER ]
+if [  $OUTPUTFOLDER = / ]
 then
-	echo /FROMFOLDER /$FROMFOLDER does not exist 
+	echo must set TOFOLDER in order to set OUTPUTFOLDER correctly
 	exit
 fi
 
-if [ ! -e /$TOFOLDER ]
+if [ ! -e $INPUTFOLDER ]
 then
-	mkdir /$TOFOLDER 
-	if [ ! -e /$TOFOLDER ]
+	echo INPUTFOLDER $INPUTFOLDER does not exist 
+	exit
+fi
+
+if [ ! -e $OUTPUTFOLDER ]
+then
+	mkdir $OUTPUTFOLDER 
+	if [ ! -e $OUTPUTFOLDER ]
 	then
-		echo could not create /TOFOLDER /$TOFOLDER 
+		echo could not create /OUTPUTFOLDER $OUTPUTFOLDER 
 		exit
 	fi
 fi

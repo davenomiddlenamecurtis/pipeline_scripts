@@ -11,7 +11,7 @@ do
 	if [ $doing -ge $numberToDo ] ; then break; fi
 done
 
-# echo SRR1818305_sorted_unique.cleaned.r1.fastq.gz > /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
+# echo SRR1776872_sorted_unique.cleaned.r1.fastq.gz > /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
 # just to check
 
 export IDFILE=/cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
@@ -23,7 +23,7 @@ export PIPELINETEMPFOLDER=/cluster/project8/bipolargenomes/pipelinetempmovefolde
 export ATTEMPTS=1
 
 export PIPELINENAME=moveFastqs
-export PIPELINESCRIPTSFOLDER=/home/rejudcu/pipelineScripts
+export PIPELINESCRIPTSFOLDER=/home/rejudcu/pipeline_scripts
 export PIPELINESCRIPTS="moveFiles.sh"
 export PIPELINEHOMEFOLDER=/
 

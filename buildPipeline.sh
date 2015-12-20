@@ -381,7 +381,10 @@ then
 	echo "
 if [ \$alldone = yes ]
 then
-	chmod 440 ${OUTPUTFILES[$i]}
+	for f in ${OUTPUTFILES[$i]}
+	do 
+		chmod 440 $f
+	done
 fi	
 " >> $scriptname
 fi
