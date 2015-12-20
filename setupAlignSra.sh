@@ -15,7 +15,7 @@ done
 # just to check
 
 export PIPELINENAME=alignSraPipeline
-export PIPELINESCRIPTSFOLDER=/home/rejudcu/pipelineScripts
+export PIPELINESCRIPTSFOLDER=/home/rejudcu/pipeline_scripts
 # export PIPELINESCRIPTS="runNovoalign.sh removeDuplicates.sh concordantSam2Bam.sh discordantSam2Bam.sh sortConcordantBam.sh sortDiscordantBam.sh"
 # export PIPELINESCRIPTS="runNovoalign.sh discordantSam2Bam.sh sortConcordantBam.sh sortDiscordantBam.sh"
 export PIPELINESCRIPTS="sra2fastq.sh"
@@ -30,8 +30,8 @@ export PIPELINEPARSFILE=$PIPELINESCRIPTSFOLDER/alignParsFile.txt
 doing=`cat $IDFILE | wc -l`
 if [ $doing -gt 0 ]
 then
-	bash ~/pipelineScripts/buildPipeline.sh  
-	echo "bash ~/pipelineScripts/setupAlignSra.sh &> /cluster/project8/bipolargenomes/SSSDNM/pipelinetempfolder/setupAlignSra.log " | at now +30 minutes
+	bash ~/pipeline_scripts/buildPipeline.sh  
+	# echo "bash ~/pipeline_scripts/setupAlignSra.sh &> /cluster/project8/bipolargenomes/SSSDNM/pipelinetempfolder/setupAlignSra.log " | at now +30 minutes
 else
 	echo All finished > /cluster/project8/bipolargenomes/SSSDNM/pipelinetempfolder/setupAlignSra.log 
 fi
