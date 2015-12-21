@@ -47,7 +47,7 @@ NHOURS 4
 
 COMMANDS
 
-if [ $PIPELINEHOMEFOLDER |= / ]
+if [ $PIPELINEHOMEFOLDER != / ]
 then
 	echo PIPELINEHOMEFOLDER must be /
 	exit
