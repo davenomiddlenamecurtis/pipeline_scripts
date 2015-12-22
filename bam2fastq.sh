@@ -6,31 +6,30 @@
 
 # TEMPFOLDER is the place for intermediate files belonging to the script in main project space
 # except for SCRATCHFOLDER all folders will be relative to PIPELINEHOMEFOLDER
-TEMPFOLDER bam2fastqtemp
+TEMPFOLDER=bam2fastqtemp
 
 # INPUTFOLDER is folder where to find input files, relative to $PIPELINEHOMEFOLDERn
-INPUTFOLDER cleaned
+INPUTFOLDER=cleaned
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
-INPUTFILES ${ID}_sorted_unique.cleaned.bam
+INPUTFILES=${ID}_sorted_unique.cleaned.bam
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
-OUTPUTFOLDER fastq
+OUTPUTFOLDER=fastq
 
 # OUTPUTFILES is list of output files in $PIPELINEHOMEFOLDER/$OUTPUTFOLDER (usually will have $ID in it)
 # these are all the files which should exist by the time this stage of the pipeline is complete
-OUTPUTFILES ${ID}_sorted_unique.cleaned.r1.fastq ${ID}_sorted_unique.cleaned.r2.fastq 
+OUTPUTFILES="${ID}_sorted_unique.cleaned.r1.fastq ${ID}_sorted_unique.cleaned.r2.fastq" 
 
 # WRITTENFILES is a list of output files $PIPELINEHOMEFOLDER/$OUTPUTFOLDER actually written by this script
 # if one is missing or zero length all will be deleted before the script runs
-WRITTENFILES ${ID}_sorted_unique.cleaned.r1.fastq ${ID}_sorted_unique.cleaned.r2.fastq
+WRITTENFILES="${ID}_sorted_unique.cleaned.r1.fastq ${ID}_sorted_unique.cleaned.r2.fastq"
 
 # HVMEM will be read and used to request hvmem for the script
-HVMEM 6G
-TMEM 6G
-# neeed more memory to run java
-NCORES 1
-SCRATCH 1G
+HVMEM=6G
+TMEM=6G
+NCORES=1
+SCRATCH=1G
 # NHOURS 20
 NHOURS 60
 

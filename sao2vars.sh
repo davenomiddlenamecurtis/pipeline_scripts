@@ -6,36 +6,35 @@
 
 # TEMPFOLDER is the place for intermediate files belonging to the script in main project space
 # except for SCRATCHFOLDER all folders will be relative to PIPELINEHOMEFOLDER
-TEMPFOLDER sra2fastqtemp
+TEMPFOLDER=sra2fastqtemp
 
 # INPUTFOLDER is folder where to find input files, relative to $PIPELINEHOMEFOLDERn
-INPUTFOLDER sra
+INPUTFOLDER=sra
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
-INPUTFILES ${ID}.sra
+INPUTFILES=${ID}.sra
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
-OUTPUTFOLDER fastq
+OUTPUTFOLDER=fastq
 
 # OUTPUTFILES is list of output files in $PIPELINEHOMEFOLDER/$OUTPUTFOLDER (usually will have $ID in it)
 # these are all the files which should exist by the time this stage of the pipeline is complete
-OUTPUTFILES ${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned.r2.fastq.gz
+OUTPUTFILES="${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned.r2.fastq.gz"
 
 # WRITTENFILES is a list of output files $PIPELINEHOMEFOLDER/$OUTPUTFOLDER actually written by this script
 # if one is missing or zero length all will be deleted before the script runs
-WRITTENFILES ${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned.r2.fastq.gz
+WRITTENFILES="${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned.r2.fastq.gz"
 # leave out testing with gzip
 
 # HVMEM will be read and used to request hvmem for the script
-HVMEM 4G
-TMEM 4G
+HVMEM=4G
+TMEM=4G
 # I increased this from 2 to see if it would stop dumpfastq silently failing
 # neeed more memory to run java
-NCORES 1
-SCRATCH 1G
+NCORES=1
+SCRATCH=1G
 # NHOURS 20
-NHOURS 4
-
+NHOURS=4
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files
 # must be constructed so that complete output files are produced promptly, usually with a mv commands

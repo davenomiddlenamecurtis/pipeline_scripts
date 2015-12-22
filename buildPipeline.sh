@@ -108,33 +108,25 @@ do
 		toset=$p[$i];
 		default=DEFAULT$p;
 		echo $toset=${!default} >> $tempVarFile
-		# eval $toset=${!default}; 
 	done
 	cat $PIPELINESCRIPTSFOLDER/$s | while read line
 	do
-		words=($line)
-		first=${words[0]}
+		if [ "$line" = "" ]; then continue; fi
+		if [ "${line%%#*}" = "" ] ; then continue; fi 
+		
+		first=${line%%=*}
+		rest=${line#*=}
+		if [ $first = COMMANDS ]; then break; fi
+		
 		toset=$first[$i]
 		case $first in
-		HVMEM | TMEM | NCORES | SCRATCH | NHOURS | SCRIPTFOLDER | INPUTFOLDER | OUTPUTFOLDER | TEMPFOLDER )
-			echo $toset=${words[1]}  >> $tempVarFile
-			# eval $toset=${words[1]}
+		HVMEM | TMEM | NCORES | SCRATCH | NHOURS | SCRIPTFOLDER | INPUTFOLDER | OUTPUTFOLDER | TEMPFOLDER | INPUTFILES | OUTPUTFILES | WRITTENFILES)
+			echo $toset=$rest  >> $tempVarFile
 			;;
-		INPUTFILES | OUTPUTFILES | WRITTENFILES )
-			files=""
-			for (( w=1; w < ${#words[@]} ; w++ ))
-				do
-					eval file=${words[$w]}
-					files="$files $file"
-				done
-			echo $toset=\"$files\"  >> $tempVarFile
-			# eval $toset=\"$files\"
-			# at this point I think $ID gets evaluated
-			# but we don't want to try to expand these here because not in right folder
-			# try to keep them unchanged
-			# actually, I think this may work as it is - seemed to work at command prompt
-			;;
-		COMMANDS )
+		* )
+			echo Unrecognised line in $PIPELINESCRIPTSFOLDER/$s before COMMANDS section:
+			echo $line
+			exit
 			break
 			;;
 		esac
@@ -418,6 +410,8 @@ fi
 
 done
 # all scripts written
+
+exit
 
 lastjobname=""
 for (( attempt=1; attempt<=$ATTEMPTS; ++attempt ))
