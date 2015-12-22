@@ -7,7 +7,7 @@
 
 # TEMPFOLDER is the place for intermediate files belonging to the script in main project space
 # except for SCRATCHFOLDER all folders will be relative to PIPELINEHOMEFOLDER
-TEMPFOLDER cluster/scratch4/rejudcu_scratch/SSSDNM/moveFilesTemp
+TEMPFOLDER $TOFOLDER/moveFilesTemp
 
 # INPUTFOLDER is folder where to find input files, relative to $PIPELINEHOMEFOLDERn
 INPUTFOLDER $FROMFOLDER

@@ -383,7 +383,7 @@ if [ \$alldone = yes ]
 then
 	for f in ${OUTPUTFILES[$i]}
 	do 
-		chmod 440 $f
+		chmod 440 \$f
 	done
 fi	
 " >> $scriptname

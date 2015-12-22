@@ -27,14 +27,14 @@ WRITTENFILES ${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned
 # leave out testing with gzip
 
 # HVMEM will be read and used to request hvmem for the script
-HVMEM 4G
-TMEM 4G
+HVMEM 8G
+TMEM 8G
 # I increased this from 2 to see if it would stop dumpfastq silently failing
 # neeed more memory to run java
 NCORES 1
-SCRATCH 1G
+SCRATCH 4G
 # NHOURS 20
-NHOURS 4
+NHOURS 8
 
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files

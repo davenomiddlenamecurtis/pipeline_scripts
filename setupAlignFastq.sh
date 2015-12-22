@@ -1,6 +1,6 @@
 #!/bin/bash
 
-numberToDo=5
+numberToDo=20
 rm /cluster/project8/bipolargenomes/BPGIDs/doThese.txt
 doing=0
 cat /cluster/project8/bipolargenomes/BPGIDs/allBPIDs.txt | while read ID
