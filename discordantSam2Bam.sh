@@ -15,7 +15,7 @@ OUTPUTFOLDER=sam
 
 # OUTPUTFILES is list of output files in $PIPELINEHOMEFOLDER/$OUTPUTFOLDER (usually will have $ID in it)
 # these are all the files which should exist by the time this stage of the pipeline is complete
-OUTPUTFILES=${ID}_disc.bam ${ID}_conc.bam"
+OUTPUTFILES="${ID}_disc.bam ${ID}_conc.bam"
 
 # WRITTENFILES is a list of output files $PIPELINEHOMEFOLDER/$OUTPUTFOLDER actually written by this script
 # if one is missing or zero length all will be deleted before the script runs

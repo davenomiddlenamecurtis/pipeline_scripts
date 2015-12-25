@@ -78,6 +78,8 @@ do
 
 # use qstat to see if scripts are running for this ID and if so skip it with a message
 
+# change below to J_$ID* when current jobs have finished
+
 if [ $OLDCLUSTER = yes ]
 then
 	qcount=( $( qstat -j "*$ID*" | wc ) )
@@ -116,7 +118,7 @@ do
 		
 		first=${line%%=*}
 		rest=${line#*=}
-		if [ $first = COMMANDS ]; then break; fi
+		if [ "$first" = "COMMANDS" ]; then break; fi
 		
 		toset=$first[$i]
 		case $first in
@@ -143,6 +145,10 @@ for (( i=$SCRIPTNUMBER-1;i>=0; i-- ))
 do
 	outfiles=${OUTPUTFILES[$i]}
 	filemissing=no
+	if [ ! -e $PIPELINEHOMEFOLDER/${TEMPFOLDER[$i]} ]
+	then
+		mkdir $PIPELINEHOMEFOLDER/${TEMPFOLDER[$i]}
+	fi
 	if [ ! -e $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$i]} ]
 	then
 		mkdir $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$i]}
@@ -411,8 +417,6 @@ fi
 done
 # all scripts written
 
-exit
-
 lastjobname=""
 for (( attempt=1; attempt<=$ATTEMPTS; ++attempt ))
 do
@@ -424,13 +428,14 @@ do
 		jobname=$ID.$PIPELINENAME.${SCRIPTARRAY[$i]}.$attempt
 		if [ "$lastjobname" = "" ]
 		then
-			echo qsub -N $jobname $scriptname
-			qsub -N $jobname $scriptname
+			echo qsub -N J_$jobname $scriptname
+			qsub -N J_$jobname $scriptname
 		else
-			echo qsub -N $jobname -hold_jid $lastjobname $scriptname
-			qsub -N $jobname -hold_jid $lastjobname $scriptname
+			echo qsub -N J_$jobname -hold_jid $lastjobname $scriptname
+			qsub -N J_$jobname -hold_jid $lastjobname $scriptname
 		fi
-		lastjobname=$jobname
+		lastjobname=J_$jobname
+		# annoyingly, a job name cannot start with a digit
 	done
 
 done

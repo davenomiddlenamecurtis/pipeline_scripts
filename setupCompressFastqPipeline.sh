@@ -5,7 +5,7 @@ rm /cluster/project8/bipolargenomes/BPGIDs/doThese.txt
 doing=0
 cat /cluster/project8/bipolargenomes/BPGIDs/BPGIDs.txt | while read ID
 do
-	if [ -e /cluster/project8/bipolargenomes/fastq/${ID}_sorted_unique.cleaned.r2.fastq.gz ] ; then continue; fi
+	if [ -e /cluster/project8/bipolargenomes/fastq/${ID}.r2.fastq.gz ] ; then continue; fi
 	echo $ID >> /cluster/project8/bipolargenomes/BPGIDs/doThese.txt
 	doing=$(( doing + 1 ))
 	if [ $doing -ge $numberToDo ] ; then break; fi

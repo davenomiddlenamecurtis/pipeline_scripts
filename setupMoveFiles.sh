@@ -11,7 +11,7 @@ do
 	if [ $doing -ge $numberToDo ] ; then break; fi
 done
 
-# echo SRR1776872_sorted_unique.cleaned.r1.fastq.gz > /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
+# echo SRR1776872.r1.fastq.gz > /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
 # just to check
 
 export IDFILE=/cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt

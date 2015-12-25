@@ -9,21 +9,22 @@
 TEMPFOLDER=sra2fastqtemp
 
 # INPUTFOLDER is folder where to find input files, relative to $PIPELINEHOMEFOLDERn
-INPUTFOLDER=sra
+INPUTFOLDER=sources
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
-INPUTFILES=${ID}.sra
+INPUTFILES=${ID}.sources.txt
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
-OUTPUTFOLDER=fastq
+OUTPUTFOLDER=sources
 
 # OUTPUTFILES is list of output files in $PIPELINEHOMEFOLDER/$OUTPUTFOLDER (usually will have $ID in it)
 # these are all the files which should exist by the time this stage of the pipeline is complete
-OUTPUTFILES="${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned.r2.fastq.gz"
+OUTPUTFILES=${ID}.extractedOK.txt
+# "${ID}.r1.fastq.gz ${ID}.r2.fastq.gz"
 
 # WRITTENFILES is a list of output files $PIPELINEHOMEFOLDER/$OUTPUTFOLDER actually written by this script
 # if one is missing or zero length all will be deleted before the script runs
-WRITTENFILES="${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned.r2.fastq.gz"
+WRITTENFILES="${ID}.r1.fastq.gz ${ID}.r2.fastq.gz"
 # leave out testing with gzip
 
 # HVMEM will be read and used to request hvmem for the script
@@ -49,54 +50,78 @@ NHOURS=8
 
 COMMANDS
 
-# potentially for the exomes these could go to scratch0
+# potentially for the exomes these could go to scratch?
 scratchFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
 mkdir $scratchFolder
 workFolder=$scratchFolder
 
+# I am going to use these fixed names for the intermediate folders I will need
+DOWNLOADEDFASTQFOLDER=downloadedFastqs
+SRAFOLDER=sra
+
 rm $workFolder/*
-
-infiles=($INPUTFILES)
-outfiles=($OUTPUTFILES)
-fastqfiles=(${ID}_1.fastq.gz ${ID}_2.fastq.gz )
-date
-echo running $fastqdump
-cd /cluster/project8/bipolargenomes/downloads
-# vital to cd or else none of the SRA utilities will work
-$fastqdump --outdir $scratchFolder --gzip --split-3 $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]} > $scratchFolder/fastqdump.err
-echo $fastqdump finished, here is output of ls -l $scratchFolder
-ls -l $scratchFolder # just for debugging
-echo $scratchFolder/fastqdump.err looks like this:
-cat $scratchFolder/fastqdump.err
-OK=yes
-
-if [ ! -e $scratchFolder/${fastqfiles[0]} -o ! -e $scratchFolder/${fastqfiles[1]} ]
+if [ "$DBGAPDOWNLOADFOLDER" = "" ]
 then
-	OK=no
+	echo Error in $0, must set DBGAPDOWNLOADFOLDER for fastqdump to work
+	exit
 fi
-if [ \$OK = yes ]
-then
-	countWritten=\$(fgrep -c Written $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/fastqdump.err)
-	if [ \$countWritten -eq 0 ]
+
+cd $DBGAPDOWNLOADFOLDER
+# vital to cd or else none of the SRA utilities will work
+
+OK=yes
+cat $PIPELINEHOMEFOLDER/INPUTFOLDER/$INPUTFILES | ( 
+read line
+words=($line)
+for (( i=1 ; i<${#words[@]} ; ++i ))
+do
+	if [ $OK = no ] ; then break; fi
+	sra=${words[1]}
+	fastqfiles=(${sra}_1.fastq.gz ${sra}_2.fastq.gz )
+	date
+	echo running $fastqdump
+	$fastqdump --outdir $scratchFolder --gzip --split-3 $PIPELINEHOMEFOLDER/$SRAFOLDER/$sra.sra > $scratchFolder/fastqdump.err
+	echo $fastqdump finished, here is output of ls -l $scratchFolder
+	ls -l $scratchFolder # just for debugging
+	echo $scratchFolder/fastqdump.err looks like this:
+	cat $scratchFolder/fastqdump.err
+	if [ ! -e $scratchFolder/${fastqfiles[0]} -o ! -e $scratchFolder/${fastqfiles[1]} ]
 	then
 		OK=no
 	fi
-fi
+	if [ \$OK = yes ]
+	then
+		countWritten=\$(fgrep -c Written $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/fastqdump.err)
+		if [ \$countWritten -eq 0 ]
+		then
+			OK=no
+		fi
+	fi
 
-if [ \$OK = no ]
+	if [ \$OK = no ]
+	then
+		echo Error - $scratchFolder/${fastqfiles[0]} and $scratchFolder/${fastqfiles[1]} not written properly
+	else
+		fastqSize1=$(stat -c%s $scratchFolder/${fastqfiles[0]})
+		fastqSize2=$(stat -c%s $scratchFolder/${fastqfiles[1]})
+		inSize=$(stat -c%s $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]})
+		percent=$(echo "( $fastqSize1 + $fastqSize2 ) * 100 / $inSize " | bc )
+		echo $inSize $fastqSize1  $fastqSize2 $percent
+	fi
+done
+if [ OK = yes ] # all files extracted OK, now move them and delete sra file
 then
-	echo Error - $scratchFolder/${fastqfiles[0]} and $scratchFolder/${fastqfiles[1]} not written properly
-else
-	fastqSize1=$(stat -c%s $scratchFolder/${fastqfiles[0]})
-	fastqSize2=$(stat -c%s $scratchFolder/${fastqfiles[1]})
-	inSize=$(stat -c%s $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]})
-	percent=$(echo "( $fastqSize1 + $fastqSize2 ) / $inSize * 100 " | bc )
-	echo $inSize $fastqSize1  $fastqSize2 $percent
-	mv $scratchFolder/${fastqfiles[0]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[0]}
-	mv $scratchFolder/${fastqfiles[1]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[1]}
-	# assumes they are on same file system so mv is instant - does not work if using scratch0
-	rm $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]}
-	rm /cluster/project8/bipolargenomes/downloads/sra/${infiles[0]}
+	for (( i=1 ; i<${#words[@]} ; ++i ))
+	do
+		sra=${words[1]}
+		fastqfiles=(${sra}_1.fastq.gz ${sra}_2.fastq.gz )
+		mv $scratchFolder/${fastqfiles[0]} $PIPELINEHOMEFOLDER/$DOWNLOADEDFASTQFOLDER/$sra.r1.fastq.gz
+		mv $scratchFolder/${fastqfiles[1]} $PIPELINEHOMEFOLDER/$DOWNLOADEDFASTQFOLDER/$sra.r2.fastq.gz
+		# assumes they are on same file system so mv is instant - does not work if using scratch0
+		rm $PIPELINEHOMEFOLDER/$SRAFOLDER/$sra.sra
+	done
 	rm -r $scratchFolder
+	echo Extracted these sources OK: > $OUTPUTFOLDER/$OUTPUTFILES
+	echo $line >> $OUTPUTFOLDER/$OUTPUTFILES
 fi
-		
+)		

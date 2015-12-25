@@ -12,18 +12,18 @@ TEMPFOLDER=compressfastqtemp
 INPUTFOLDER=fastq
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
-INPUTFILES="${ID}_sorted_unique.cleaned.r2.fastq.nottested.gz ${ID}_sorted_unique.cleaned.r2.fastq ${ID}_sorted_unique.cleaned.r1.fastq.gz.waitingforr2"
+INPUTFILES="${ID}.cleaned.r2.fastq.nottested.gz ${ID}.cleaned.r2.fastq ${ID}.cleaned.r1.fastq.gz.waitingforr2"
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
 OUTPUTFOLDER=fastq
 
 # OUTPUTFILES is list of output files in $PIPELINEHOMEFOLDER/$OUTPUTFOLDER (usually will have $ID in it)
 # these are all the files which should exist by the time this stage of the pipeline is complete
-OUTPUTFILES="${ID}_sorted_unique.cleaned.r2.fastq.gz ${ID}_sorted_unique.cleaned.r1.fastq.gz"
+OUTPUTFILES="${ID}.cleaned.r2.fastq.gz ${ID}.cleaned.r1.fastq.gz"
 
 # WRITTENFILES is a list of output files $PIPELINEHOMEFOLDER/$OUTPUTFOLDER actually written by this script
 # if one is missing or zero length all will be deleted before the script runs
-WRITTENFILES="${ID}_sorted_unique.cleaned.r2.fastq.gz ${ID}_sorted_unique.cleaned.r1.fastq.gz "
+WRITTENFILES="${ID}.cleaned.r2.fastq.gz ${ID}.cleaned.r1.fastq.gz "
 
 # HMEM will be read and used to request hmem for the script
 HMEM=1G

@@ -19,11 +19,11 @@ OUTPUTFOLDER=fastq
 
 # OUTPUTFILES is list of output files in $PIPELINEHOMEFOLDER/$OUTPUTFOLDER (usually will have $ID in it)
 # these are all the files which should exist by the time this stage of the pipeline is complete
-OUTPUTFILES="${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned.r2.fastq.gz"
+OUTPUTFILES="${ID}.r1.fastq.gz ${ID}.r2.fastq.gz"
 
 # WRITTENFILES is a list of output files $PIPELINEHOMEFOLDER/$OUTPUTFOLDER actually written by this script
 # if one is missing or zero length all will be deleted before the script runs
-WRITTENFILES="${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned.r2.fastq.gz"
+WRITTENFILES="${ID}.r1.fastq.gz ${ID}.r2.fastq.gz"
 # leave out testing with gzip
 
 # HVMEM will be read and used to request hvmem for the script
