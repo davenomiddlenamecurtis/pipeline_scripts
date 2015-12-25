@@ -12,7 +12,7 @@ TEMPFOLDER=sra2fastqtemp
 INPUTFOLDER=sources
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
-INPUTFILES=${ID}.sources.txt
+INPUTFILES=${ID}.downloadedOK.txt
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
 OUTPUTFOLDER=sources
@@ -70,17 +70,17 @@ cd $DBGAPDOWNLOADFOLDER
 # vital to cd or else none of the SRA utilities will work
 
 OK=yes
-cat $PIPELINEHOMEFOLDER/INPUTFOLDER/$INPUTFILES | ( 
-read line
+line=`cat $PIPELINEHOMEFOLDER/$INPUTFOLDER/$INPUTFILES`
 words=($line)
 for (( i=1 ; i<${#words[@]} ; ++i ))
 do
 	if [ $OK = no ] ; then break; fi
-	sra=${words[1]}
+	sra=${words[$i]}
 	fastqfiles=(${sra}_1.fastq.gz ${sra}_2.fastq.gz )
 	date
 	echo running $fastqdump
 	$fastqdump --outdir $scratchFolder --gzip --split-3 $PIPELINEHOMEFOLDER/$SRAFOLDER/$sra.sra > $scratchFolder/fastqdump.err
+	date
 	echo $fastqdump finished, here is output of ls -l $scratchFolder
 	ls -l $scratchFolder # just for debugging
 	echo $scratchFolder/fastqdump.err looks like this:
@@ -113,7 +113,7 @@ if [ OK = yes ] # all files extracted OK, now move them and delete sra file
 then
 	for (( i=1 ; i<${#words[@]} ; ++i ))
 	do
-		sra=${words[1]}
+		sra=${words[$i]}
 		fastqfiles=(${sra}_1.fastq.gz ${sra}_2.fastq.gz )
 		mv $scratchFolder/${fastqfiles[0]} $PIPELINEHOMEFOLDER/$DOWNLOADEDFASTQFOLDER/$sra.r1.fastq.gz
 		mv $scratchFolder/${fastqfiles[1]} $PIPELINEHOMEFOLDER/$DOWNLOADEDFASTQFOLDER/$sra.r2.fastq.gz
@@ -124,4 +124,3 @@ then
 	echo Extracted these sources OK: > $OUTPUTFOLDER/$OUTPUTFILES
 	echo $line >> $OUTPUTFOLDER/$OUTPUTFILES
 fi
-)		

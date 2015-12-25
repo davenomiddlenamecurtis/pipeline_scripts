@@ -33,7 +33,7 @@ doing=`cat $IDFILE | wc -l`
 if [ $doing -gt 0 ]
 then
 	bash $PIPELINESCRIPTSFOLDER/buildPipeline.sh  
-	# echo "bash $0 &> $logFile " | at now +12 hours
+	echo "bash $0 &> $logFile " | at now +12 hours
 else
 	echo All finished > $logFile 
 fi
