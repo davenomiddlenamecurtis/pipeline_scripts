@@ -104,12 +104,12 @@ do
 	else
 		fastqSize1=$(stat -c%s $scratchFolder/${fastqfiles[0]})
 		fastqSize2=$(stat -c%s $scratchFolder/${fastqfiles[1]})
-		inSize=$(stat -c%s $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]})
+		inSize=$(stat -c%s $PIPELINEHOMEFOLDER/$SRAFOLDER/$sra.sra)
 		percent=$(echo "( $fastqSize1 + $fastqSize2 ) * 100 / $inSize " | bc )
 		echo $inSize $fastqSize1  $fastqSize2 $percent
 	fi
 done
-if [ OK = yes ] # all files extracted OK, now move them and delete sra file
+if [ $OK = yes ] # all files extracted OK, now move them and delete sra file
 then
 	for (( i=1 ; i<${#words[@]} ; ++i ))
 	do
@@ -121,6 +121,5 @@ then
 		rm $PIPELINEHOMEFOLDER/$SRAFOLDER/$sra.sra
 	done
 	rm -r $scratchFolder
-	echo Extracted these sources OK: > $OUTPUTFOLDER/$OUTPUTFILES
-	echo $line >> $OUTPUTFOLDER/$OUTPUTFILES
+	echo $line > $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/$OUTPUTFILES # ID SRA1 SRA2
 fi

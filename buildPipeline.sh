@@ -44,9 +44,16 @@ echo PIPELINESCRIPTS - list of scripts in order to be applied to each ID
 echo IDFILE - full path of file containing IDs
 fi
 
+if [ $HOSTNAME = elwood.local ]
+then
+	export OLDCLUSTER=yes
+else
+	export OLDCLUSTER=no
+fi
+
 if [ -z "$PIPELINEHOMEFOLDER" ]
 then
-	PIPELINEHOMEFOLDER=/cluster/project8/bipolargenomes/
+	PIPELINEHOMEFOLDER=$PROJECTDIR/
 fi
 if [ -z "$ATTEMPTS" ]
 then
@@ -354,6 +361,7 @@ done
 			if [ $oncommands = yes ]
 			then
 				echo "$line" >> $scriptname
+# line above will do some conversions, e.g. \\ to \ and similar
 			fi
 		fi
 	done
@@ -414,8 +422,14 @@ fi
 " >> $scriptname
 fi
 
+
 done
 # all scripts written
+
+if [ "$SUBMITJOBS" = no ]
+then
+	exit
+fi
 
 lastjobname=""
 for (( attempt=1; attempt<=$ATTEMPTS; ++attempt ))

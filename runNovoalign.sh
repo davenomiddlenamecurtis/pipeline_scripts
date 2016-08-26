@@ -8,7 +8,7 @@ TEMPFOLDER=fastq2bamtemp
 INPUTFOLDER=fastq
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
-INPUTFILES="${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned.r2.fastq.gz"
+INPUTFILES="${ID}.r1.fastq.gz ${ID}.r2.fastq.gz"
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
 OUTPUTFOLDER=sam
@@ -29,7 +29,7 @@ TMEM=8G
 # neeed more memory to run java
 NCORES=6
 SCRATCH=1G
-NHOURS=240
+NHOURS=480
 
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files
@@ -44,9 +44,11 @@ NHOURS=240
 
 COMMANDS
 
-scratchFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+workFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+# this needs to be on same system as OUTPUTFOLDER so can do fast mv
+scratchFolder=/scratch0/runNovoalignTemp/$ID
+mkdir /scratch0/runNovoalignTemp
 mkdir $scratchFolder
-workFolder=$scratchFolder
 
 infiles=($INPUTFILES)
 outfiles=($OUTPUTFILES)
@@ -79,8 +81,10 @@ then
     chrPrefix='chr'
 elif [[ "$reference" == "1kg" ]]
 then
-    fasta=/scratch2/vyp-scratch2/reference_datasets/human_reference_sequence/human_g1k_v37.fasta
-    novoalignRef=/scratch2/vyp-scratch2/reference_datasets/human_reference_sequence/human_g1k_v37.fasta.k15.s2.novoindex
+#     fasta=/scratch2/vyp-scratch2/reference_datasets/human_reference_sequence/human_g1k_v37.fasta
+#     novoalignRef=/scratch2/vyp-scratch2/reference_datasets/human_reference_sequence/human_g1k_v37.fasta.k15.s2.novoindex
+    fasta=$PROJECTDIR/reference1g/human_g1k_v37.fasta
+    novoalignRef=$PROJECTDIR/reference1g/human_g1k_v37.fasta.k15.s2.novoindex
     chrPrefix=''
 elif [[ "$reference" == "hg19" ]]
 then
@@ -90,39 +94,50 @@ then
 else
     stop Unsupported reference $reference
 fi
-for file in $fasta
+for file in $fasta $novoalignRef
 do
     ls -lh $file
     if [ ! -e "$file"  ] && [ "$file" != "none" ]
     then 
         stop "Error, reference file $file does not exist"
+	else
+		cp $file $scratchFolder
     fi
 done
-for file in $novoalignRef
-do
-    ls -lh $file
-    if [ ! -e "$file"  ] && [ "$file" != "none" ]
-    then 
-        stop "Error, reference file $file does not exist"
-    fi
-done
-   
+
+fasta=$scratchFolder/${fasta##*/}
+novoalignRef=$scratchFolder/${novoalignRef##*/}
 
 date
 mkdir $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/
 # $novoalign -c ${ncores} -o SAM $'@RG\tID:${extraID}${code}\tSM:${extraID}${code}\tLB:${extraID}$code\tPL:ILLUMINA' --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f ${f1} ${f2}  -d ${novoalignRef} | ${samblaster} -e -d ${output}/${code}_disc.sam  | ${samtools} view -Sb - > ${output}/${code}.bam
 # above does not expand correctly the way I am writing scripts, should be:
 $novoalign -c ${ncores} -o SAM \$"@RG\\tID:${code}\\tSM:${code}\\tLB:$code\\tPL:ILLUMINA" --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f ${f1} ${f2}  -d ${novoalignRef} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err | ${samblaster} -e -d $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[1]} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err | ${samtools} view -Sb -o $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} - 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samtools.err
+date
 OK=yes
 countDone=\$(fgrep -c Done $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err)
 if [ \$countDone -eq 0 ]
 then
 	echo Problem running $novoalign, log file did not include \"Done\"
+	echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err:
+	cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
+	echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
+	echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err:
+	cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
+	echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
+	echo ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+	ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+	echo ls -l $scratchFolder
+	ls -l $scratchFolder
+	echo df
+	df
 	OK=no
 fi
 if [ ! -e $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} -o ! -s $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} ]
 then
 	echo Error: $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} was not written correctly
+	ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+	ls -l $scratchFolder
 	OK=no
 fi
 if [ \$OK = yes ]
@@ -131,6 +146,8 @@ then
 	if [ \$countMarked -eq 0 ]
 	then
 		echo Problem running $samblaster, log file did not include \"Marked\"
+		cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
+		ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
 		OK=no
 	fi
 fi
@@ -143,4 +160,5 @@ then
 else
 	echo Error: problem running novoalign and samblaster - output files not written
 fi
+rm -rf $scratchFolder
 date

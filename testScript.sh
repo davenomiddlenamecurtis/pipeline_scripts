@@ -1,5 +1,5 @@
 #!/bin/bash
-IDFILE=/cluster/project8/bipolargenomes/BPGIDs/BPGIDs.txt
+IDFILE=$PROJECTDIR/BPGIDs/BPGIDs.txt
 SCRIPTNUMBER=2
 
 # script to build and submit pipeline scripts

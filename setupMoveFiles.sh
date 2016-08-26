@@ -1,38 +1,44 @@
 #!/bin/bash
 
-numberToDo=100
-rm /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
+export FROMFOLDER=$PROJECTDIR/BPgenomes/bam
+export TOFOLDER=/cluster/project99/bipolargenomes_raw/forlab/bam
+# export TOFOLDER=/goon2/project99/bipolargenomes_raw/forlab/SSSDNM/bam
+# export TOFOLDER=$PROJECTDIR/BPgenomes/fastq
+export PIPELINETEMPFOLDER=$TOFOLDER/pipelinetempmovefolder
+export numberToDo=100
+REALIDFILE=$PROJECTDIR/BPgenomes/moveThese.txt
+
+tempIDFile=$TOFOLDER/tempMoveThese.txt
+logFile=${0##*/}
+logFile=$PIPELINETEMPFOLDER/${logFile%.sh}.log
+
+rm $tempIDFile
 doing=0
-cat /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/toMove.txt | while read ID
+cat $REALIDFILE | while read ID
 do
-	if [ -e /cluster/scratch4/rejudcu_scratch/SSSDNM/fastq/$ID ] ; then continue; fi
-	echo $ID >> /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
+	if [ -e $TOFOLDER/$ID ] ; then continue; fi
+	echo $ID >> $tempIDFile
 	doing=$(( doing + 1 ))
 	if [ $doing -ge $numberToDo ] ; then break; fi
 done
 
-# echo SRR1776872.r1.fastq.gz > /cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
+export IDFILE=$tempIDFile
+
+# echo SRR1776872.r1.fastq.gz > $PROJECTDIR/SSSDNM/SRRIDs/moveThese.txt
 # just to check
 
-export IDFILE=/cluster/project8/bipolargenomes/SSSDNM/SRRIDs/moveThese.txt
-export FROMFOLDER=/cluster/project8/bipolargenomes/SSSDNM/fastq
-export TOFOLDER=/cluster/scratch4/rejudcu_scratch/SSSDNM/fastq
-
-export OLDCLUSTER=yes
-export PIPELINETEMPFOLDER=/cluster/project8/bipolargenomes/pipelinetempmovefolder
 export ATTEMPTS=1
 
-export PIPELINENAME=moveFastqs
+export PIPELINENAME=moveBams
 export PIPELINESCRIPTSFOLDER=/home/rejudcu/pipeline_scripts
 export PIPELINESCRIPTS="moveFiles.sh"
 export PIPELINEHOMEFOLDER=/
-
 
 doing=`cat $IDFILE | wc -l`
 if [ $doing -gt 0 ]
 then
 	bash ~/pipeline_scripts/buildPipeline.sh  
-	echo "bash ~/pipeline_scripts/setupMoveFiles.sh &> /cluster/project8/bipolargenomes/pipelinetempmovefolder/setupMoveFiles.log " | at now +60 minutes
+	echo "bash $0 &> $logFile " | at now +60 minutes
 else
-	echo All finished > /cluster/project8/bipolargenomes/pipelinetempmovefolder/setupMoveFiles.log 
+	echo All finished > $logFile
 fi

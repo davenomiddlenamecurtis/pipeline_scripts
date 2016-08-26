@@ -25,7 +25,7 @@ OUTPUTFILES="${ID}_disc_sorted.bam ${ID}_disc_sorted.bam.bai ${ID}_sorted_unique
 # if one is missing or zero length all will be deleted before the script runs
 WRITTENFILES="${ID}_disc_sorted.bam ${ID}_disc_sorted.bam.bai" 
 
-# There is  some risk that the sorted_unique input files will have got moved to the ouput folder but this shouldn't happen if all else is OK.
+# There is  some risk that the sorted_unique input files will have got moved to the output folder but this shouldn't happen if all else is OK.
 
 # HVMEM will be read and used to request hvmem for the script
 HVMEM=8G

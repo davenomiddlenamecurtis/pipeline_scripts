@@ -1,12 +1,12 @@
 #!/bin/bash
 
 numberToDo=5
-rm /cluster/project8/bipolargenomes/BPGIDs/doThese.txt
+rm $PROJECTDIR/BPGIDs/doThese.txt
 doing=0
-cat /cluster/project8/bipolargenomes/BPGIDs/BPGIDs.txt | while read ID
+cat $PROJECTDIR/BPGIDs/BPGIDs.txt | while read ID
 do
-	if [ -e /cluster/project8/bipolargenomes/fastq/${ID}.r2.fastq.gz ] ; then continue; fi
-	echo $ID >> /cluster/project8/bipolargenomes/BPGIDs/doThese.txt
+	if [ -e $PROJECTDIR/fastq/${ID}.r2.fastq.gz ] ; then continue; fi
+	echo $ID >> $PROJECTDIR/BPGIDs/doThese.txt
 	doing=$(( doing + 1 ))
 	if [ $doing -ge $numberToDo ] ; then break; fi
 done
@@ -14,9 +14,9 @@ done
 export PIPELINENAME=compressFastq
 export PIPELINESCRIPTSFOLDER=/home/rejudcu/pipelineScripts
 export PIPELINESCRIPTS="compressFastq1.sh testCompressedFastq1.sh compressFastq2.sh testCompressedFastq2.sh "
-# export IDFILE=/cluster/project8/bipolargenomes/BPGIDs/BPGIDs.txt
-# export IDFILE=/cluster/project8/bipolargenomes/BPGIDs/one.txt
-export IDFILE=/cluster/project8/bipolargenomes/BPGIDs/doThese.txt
+# export IDFILE=$PROJECTDIR/BPGIDs/BPGIDs.txt
+# export IDFILE=$PROJECTDIR/BPGIDs/one.txt
+export IDFILE=$PROJECTDIR/BPGIDs/doThese.txt
 
 export OLDCLUSTER=yes
 
