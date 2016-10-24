@@ -39,7 +39,7 @@ NHOURS=24
 
 COMMANDS
 
-target=/cluster/project8/vyp/exome_sequencing_multisamples/target_region/data/merged_exome_target_cleaned.bed
+target=/cluster/project8/vyp/exome_sequencing_multisamples/target_region/data/merged_exome_target_bed
 # only for exomes!!!
 
 # everything else is set in alignParsFile.txt
@@ -84,17 +84,18 @@ $java -Djava.io.tmpdir=${javaTemp} -Xmx8g  -Xms8g  -jar $GATK -T HaplotypeCaller
 	-stand_emit_conf 10.0 \
 	--GVCFGQBands 10 --GVCFGQBands 20 --GVCFGQBands 60 \
 	-L $target \
-	-o ${ID}.gvcf &> ${OUTPUTFILES[0]}.out
-cat ${OUTPUTFILES[0]}.out
-errorCount=$(fgrep -c ERROR ${OUTPUTFILES[0]}.out)
-if [ \$errorCount .gt 0 ]
+	-variant_index_type LINEAR -variant_index_parameter 128000 \
+	-o ${ID}.gvcf &> ${outfiles[0]}.out
+cat ${outfiles[0]}.out
+errorCount=$(fgrep -c ERROR ${outfiles[0]}.out)
+if [ \$errorCount -gt 0 ]
 then
-	echo Found ERROR in ${OUTPUTFILES[0]}.out
+	echo Found ERROR in ${outfiles[0]}.out
 else
-	bgzip ${ID}.gvcf # should make ${ID}.gvcf.gz, which is ${OUTPUTFILES[0]}
-	tabix -p vcf ${OUTPUTFILES[0]}
-	mv ${OUTPUTFILES[0]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${OUTPUTFILES[0]} 
-	mv ${OUTPUTFILES[1]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${OUTPUTFILES[1]} 
+	bgzip ${ID}.gvcf # should make ${ID}.gvcf.gz, which is ${outfiles[0]}
+	tabix -p vcf ${outfiles[0]}
+	mv ${outfiles[0]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[0]} 
+	mv ${outfiles[1]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[1]} 
 
 fi
 

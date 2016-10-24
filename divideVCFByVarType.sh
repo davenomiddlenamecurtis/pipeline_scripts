@@ -61,37 +61,39 @@ date
 cd $workFolder
 errFile=$ID.err
 
-$java -Djava.io.tmpdir=${javaTemp} -Xmx8g  -Xms8g  -jar $GATK -R $fasta \
+free
+$java -Djava.io.tmpdir=${javaTemp} -Xmx4g  -Xms4g  -jar $GATK -R $fasta \
 	-T SelectVariants \
 	-V $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]} \
 	-selectType SNP \
 	-o ${outfiles[0]} &> $errFile
-	
+ls -l 	
 cat $errFile
-errorCount=$(fgrep -c ERROR $errFile)
-if [ \$errorCount .gt 0 ]
+errorCount=$(fgrep -ic ERROR $errFile)
+if [ \$errorCount -gt 0 ]
 then
 	echo Found ERROR in $errFile
 else
 	tabix -p vcf ${outfiles[0]}
 	
-	$java -Djava.io.tmpdir=${javaTemp} -Xmx8g  -Xms8g  -jar $GATK -R $fasta \
+	free
+	$java -Djava.io.tmpdir=${javaTemp} -Xmx4g  -Xms4g  -jar $GATK -R $fasta \
 		-T SelectVariants \
 		-V $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]} \
 		-selectType INDEL \
 		-selectType MIXED \
 		-o ${outfiles[2]} &> $errFile
-	
+	ls -l
 	cat $errFile
-	errorCount=$(fgrep -c ERROR $errFile)
-	if [ \$errorCount .gt 0 ]
+	errorCount=$(fgrep -ic ERROR $errFile)
+	if [ \$errorCount -gt 0 ]
 	then
 		echo Found ERROR in $errFile
 	else
 		tabix -p vcf ${outfiles[2]}
 		for (( i=0; i<4; ++i ))
 		do 
-			mv ${outfilesoutfiles[\$i]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[\$i]} 
+			mv ${outfiles[\$i]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[\$i]} 
 		done
 	fi
 fi

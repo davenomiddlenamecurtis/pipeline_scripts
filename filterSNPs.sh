@@ -40,7 +40,9 @@ TMEM=10G
 COMMANDS
 
 numBad=1000
-maxGauss=6
+# maxGauss=6
+# This did not work for chromosomes 1, 2, 18, 21
+maxGauss=4
 # everything else is set in alignParsFile.txt
 
 scratchFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
@@ -62,9 +64,9 @@ date
 cd $workFolder
 errFile=$ID.err
 
-$java -Djava.io.tmpdir=${javaTemp} -Xmx8g  -Xms8g  -jar $GATK -R $fasta \
+$java -Djava.io.tmpdir=${javaTemp} -Xmx4g  -Xms4g  -jar $GATK -R $fasta \
 	-T VariantRecalibrator \
-	-input ${infiles[0]}
+	-input $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]} \
 	--maxGaussians $maxGauss --mode SNP \
 	-resource:hapmap,VCF,known=false,training=true,truth=true,prior=15.0 ${bundle}/hapmap_3.3.b37.vcf  \
 	-resource:omni,VCF,known=false,training=true,truth=false,prior=12.0 ${bundle}/1000G_omni2.5.b37.vcf \
@@ -78,23 +80,23 @@ $java -Djava.io.tmpdir=${javaTemp} -Xmx8g  -Xms8g  -jar $GATK -R $fasta \
 # might lose minNumBadVariants
 
 cat $errFile
-errorCount=$(fgrep -c ERROR $errFile)
-if [ \$errorCount .gt 0 ]
+errorCount=$(fgrep -ic ERROR $errFile)
+if [ \$errorCount -gt 0 ]
 then
 	echo Found ERROR in $errFile
 else
 	${Rscript} ${outfiles[4]}
-	$java -Xmx8g  -Xms8g  -jar ${GATK} -T ApplyRecalibration -R $fasta \
-		-input ${infiles[0]}
+	$java -Xmx4g  -Xms4g  -jar ${GATK} -T ApplyRecalibration -R $fasta \
+		-input $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]} \
        -o ${outfiles[0]} \
        --ts_filter_level 99.5 \
 		-recalFile ${outfiles[2]} \
 		-tranchesFile ${outfiles[3]} \
        --mode SNP &> $errFile
-
+	ls -l
 	cat $errFile
-	errorCount=$(fgrep -c ERROR $errFile)
-	if [ \$errorCount .gt 0 ]
+	errorCount=$(fgrep -ic ERROR $errFile)
+	if [ \$errorCount -gt 0 ]
 	then
 		echo Found ERROR in $errFile
 	else
@@ -102,7 +104,7 @@ else
 		cp *.pdf $PIPELINEHOMEFOLDER/$OUTPUTFOLDER # not sure whether or not this will work
 		for (( i=0; i<5; ++i ))
 		do 
-			mv ${OUTPUTFILES[\$i]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${OUTPUTFILES[\$i]} 
+			mv ${outfiles[\$i]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[\$i]} 
 		done
 	fi
 fi

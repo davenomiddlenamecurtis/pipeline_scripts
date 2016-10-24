@@ -89,9 +89,9 @@ do
 
 if [ $OLDCLUSTER = yes ]
 then
-	qcount=( $( qstat -j "*$ID*" | wc ) )
+	qcount=( $( qstat -j "J_${ID}.*" | wc ) )
 else
-	qcount=( $( qstat -j "*$ID*" |& wc ) )
+	qcount=( $( qstat -j "J_${ID}.*" |& wc ) )
 fi
 if [ ${qcount[0]} -gt 2 ]
 # if no jobs then two line error message, else many lines

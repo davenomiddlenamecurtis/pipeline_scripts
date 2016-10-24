@@ -49,8 +49,8 @@ mkdir $workFolder
 allDone=maybe
 for i in 1 2
 do
-	cat ${words[1]}_sorted_unique.cleaned.r${i}.fastq.gz > $workFolder/$ID.r${i}.fastq.gz
-	cat ${words[3]}_sorted_unique.cleaned.r${i}.fastq.gz >> $workFolder/$ID.r${i}.fastq.gz
+	cat ${words[1]}_sorted_unique.r${i}.fastq.gz > $workFolder/$ID.r${i}.fastq.gz
+	cat ${words[3]}_sorted_unique.r${i}.fastq.gz >> $workFolder/$ID.r${i}.fastq.gz
 	gzip -t $workFolder/$ID.r${i}.fastq.gz
 	if [ $? -eq 0 ]
 	then
@@ -70,7 +70,7 @@ then
 	for i in 1 2
 	do
 		mv $workFolder/$ID.r${i}.fastq.gz $PROJECTDIR/SSSDNM/fastq/$ID.r${i}.fastq.gz # folder could have been specified in $ID.toMerge.txt
-		rm ${words[1]}_sorted_unique.cleaned.r${i}.fastq.gz ${words[3]}_sorted_unique.cleaned.r${i}.fastq.gz
+		rm ${words[1]}_sorted_unique.r${i}.fastq.gz ${words[3]}_sorted_unique.r${i}.fastq.gz
 	done
 	rm -r $workFolder
 	echo $ID fastqs merged OK > $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/$OUTPUTFILES

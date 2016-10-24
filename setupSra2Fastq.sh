@@ -6,7 +6,7 @@ rm $PROJECTDIR/SSSDNM/SRRIDs/getThese.txt
 doing=0
 cat $PROJECTDIR/SSSDNM/SRRIDs/SRRIDs.txt | while read ID
 do
-	if [ ! -e $PROJECTDIR/SSSDNM/fastq/${ID}_sorted_unique.cleaned.r1.fastq.gz -o ! -e $PROJECTDIR/SSSDNM/fastq/${ID}_sorted_unique.cleaned.r2.fastq.gz ] 
+	if [ ! -e $PROJECTDIR/SSSDNM/fastq/${ID}_sorted_unique.r1.fastq.gz -o ! -e $PROJECTDIR/SSSDNM/fastq/${ID}_sorted_unique.r2.fastq.gz ] 
 	then
 		if [ -e $PROJECTDIR/SSSDNM/sra/$ID.sra ]
 		then
@@ -20,9 +20,9 @@ do
 			echo $ID >> $PROJECTDIR/SSSDNM/SRRIDs/getThese.txt
 		fi
 	else
-	ls -l $PROJECTDIR/SSSDNM/fastq/${ID}_sorted_unique.cleaned.r?.fastq.gz
+	ls -l $PROJECTDIR/SSSDNM/fastq/${ID}_sorted_unique.r?.fastq.gz
 	fi
-#	if [ -e $PROJECTDIR/SSSDNM/fastq/${ID}_sorted_unique.cleaned.r2.fastq.gz ] ; then continue; fi
+#	if [ -e $PROJECTDIR/SSSDNM/fastq/${ID}_sorted_unique.r2.fastq.gz ] ; then continue; fi
 done
 
 # echo SRR1520426 > $PROJECTDIR/SSSDNM/SRRIDs/doThese.txt

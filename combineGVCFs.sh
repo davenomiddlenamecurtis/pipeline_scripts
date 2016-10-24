@@ -87,11 +87,12 @@ done
 echo -o $tempFolder/${outfiles[0]} >> $tempScript 
 
 bash $tempScript
+tabix -p vcf $tempFolder/${outfiles[0]}
 ls -l
 
 # checks here
 
-for f in $outfiles
+for f in $OUTPUTFILES
 do
 	mv $tempFolder/\$f $outputFolder/\$f
 done

@@ -12,21 +12,21 @@ TEMPFOLDER=compressfastqtemp
 INPUTFOLDER=fastq
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
-INPUTFILES="${ID}.cleaned.r2.fastq.nottested.gz ${ID}.cleaned.r2.fastq ${ID}.cleaned.r1.fastq.gz.waitingforr2"
+INPUTFILES="${ID}.r2.fastq.nottested.gz ${ID}.r2.fastq ${ID}.r1.fastq.gz.waitingforr2"
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
 OUTPUTFOLDER=fastq
 
 # OUTPUTFILES is list of output files in $PIPELINEHOMEFOLDER/$OUTPUTFOLDER (usually will have $ID in it)
 # these are all the files which should exist by the time this stage of the pipeline is complete
-OUTPUTFILES="${ID}.cleaned.r2.fastq.gz ${ID}.cleaned.r1.fastq.gz"
+OUTPUTFILES="${ID}.r2.fastq.gz ${ID}.r1.fastq.gz"
 
 # WRITTENFILES is a list of output files $PIPELINEHOMEFOLDER/$OUTPUTFOLDER actually written by this script
 # if one is missing or zero length all will be deleted before the script runs
-WRITTENFILES="${ID}.cleaned.r2.fastq.gz ${ID}.cleaned.r1.fastq.gz "
+WRITTENFILES="${ID}.r2.fastq.gz ${ID}.r1.fastq.gz "
 
 # HMEM will be read and used to request hmem for the script
-HMEM=1G
+HVMEM=1G
 
 NCORES=1
 SCRATCH=1G
@@ -48,9 +48,11 @@ if [ $? -eq 0 ]
 then
 	mv ${infiles[0]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[0]}
 	mv ${infiles[2]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[1]}
+	chmod 400 $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[0]}
+	chmod 400 $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[1]}
 	rm ${infiles[1]}
-	ln -s $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[0]} /goon2/project99/bipolargenomes_raw/ingest/forlab/fastq/${outfiles[0]}
-	ln -s $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[1]} /goon2/project99/bipolargenomes_raw/ingest/forlab/fastq/${outfiles[1]}
+#	ln -s $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[0]} /goon2/project99/bipolargenomes_raw/ingest/forlab/fastq/${outfiles[0]}
+#	ln -s $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[1]} /goon2/project99/bipolargenomes_raw/ingest/forlab/fastq/${outfiles[1]}
 else
 	echo ${infiles[0]} failed gzip -t so was removed
 	rm ${infiles[0]}

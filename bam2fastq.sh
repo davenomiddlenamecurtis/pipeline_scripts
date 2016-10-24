@@ -9,21 +9,23 @@
 TEMPFOLDER=bam2fastqtemp
 
 # INPUTFOLDER is folder where to find input files, relative to $PIPELINEHOMEFOLDERn
-INPUTFOLDER=cleaned
+# INPUTFOLDER=cleaned
+INPUTFOLDER=oldBam
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
-INPUTFILES=${ID}_sorted_unique.cleaned.bam
+# INPUTFILES=${ID}_sorted_unique.bam
+INPUTFILES=${ID}.bam
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
 OUTPUTFOLDER=fastq
 
 # OUTPUTFILES is list of output files in $PIPELINEHOMEFOLDER/$OUTPUTFOLDER (usually will have $ID in it)
 # these are all the files which should exist by the time this stage of the pipeline is complete
-OUTPUTFILES="${ID}_sorted_unique.cleaned.r1.fastq ${ID}_sorted_unique.cleaned.r2.fastq" 
+OUTPUTFILES="${ID}.r1.fastq ${ID}.r2.fastq" 
 
-# WRITTENFILES is a list of output files $PIPELINEHOMEFOLDER/$OUTPUTFOLDER actually written by this script
+# WRITTENFILES is a list of output files $PIPEqdel LINEHOMEFOLDER/$OUTPUTFOLDER actually written by this script
 # if one is missing or zero length all will be deleted before the script runs
-WRITTENFILES="${ID}_sorted_unique.cleaned.r1.fastq ${ID}_sorted_unique.cleaned.r2.fastq"
+WRITTENFILES="${ID}.r1.fastq ${ID}.r2.fastq"
 
 # HVMEM will be read and used to request hvmem for the script
 HVMEM=6G
@@ -31,7 +33,7 @@ TMEM=6G
 NCORES=1
 SCRATCH=1G
 # NHOURS 20
-NHOURS 60
+NHOURS=60
 
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files
@@ -44,17 +46,23 @@ NHOURS 60
 # if any input files do not exist then report error and exit
 # if not all output files are created properly, report error
 
+# files seem to be getting deleted from other folders, I do not know how
+# effects would be explained if scratchFolder sometimes got set to $PIPELINEHOMEFOLDER or $PIPELINEHOMEFOLDER/oldBam
+# though I do not see how this could happen
+
 COMMANDS
 
-software=/cluster/project8/vyp/vincent/Software
-java17=/share/apps/jdk1.7.0_45/jre/bin/java
 picard=/cluster/project8/vyp/vincent/Software/picard-tools-1.100
+
 # do not bother trying to use scratch0 folder because fastq files for each ID come to 300G
 scratchFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
 mkdir $scratchFolder
 workFolder=$scratchFolder
 
-rm $workFolder/*
+# rm $workFolder/*
+pushd $scratchFolder
+rm $OUTPUTFILES
+popd
 
 infiles=($INPUTFILES)
 outfiles=($OUTPUTFILES)
@@ -74,12 +82,14 @@ then
 	echo Error - exception in picard/SamToFastq.jar
 	cat $workFolder/$ID.err
 	ls -l $workFolder
-rm -r $scratchFolder
+	rm -r $scratchFolder
 else
 	ls -l $scratchFolder # just for debugging
 	if [ ! -e $scratchFolder/${outfiles[0]} -o ! -e $scratchFolder/${outfiles[1]} ]
 	then
 		echo Error - $scratchFolder/${outfiles[0]} and $scratchFolder/${outfiles[1]} not written
+		echo $workFolder/$ID.err:
+		cat $workFolder/$ID.err
 		# rm -r $scratchFolder
 	else
 		fastqSize1=$(stat -c%s $scratchFolder/${outfiles[0]})

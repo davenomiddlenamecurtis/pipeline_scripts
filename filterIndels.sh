@@ -63,24 +63,24 @@ date
 cd $workFolder
 errFile=$ID.err
 
-$java -Djava.io.tmpdir=${tmpDir} -Xmx8g  -Xms8g  -jar ${GATK} \
+$java -Djava.io.tmpdir=${javaTemp} -Xmx4g  -Xms4g  -jar ${GATK} \
     -T VariantFiltration \
     -R $fasta \
-    -V ${infiles[0]} \
+    -V $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]} \
     --filterExpression \"QD < 2.0 || FS > 50.0 || ReadPosRankSum < -20.0\" \
     --filterName \"FAIL\" \
     -o ${outfiles[0]} &> $errFile
-
+ls -l 
 cat $errFile
-errorCount=$(fgrep -c ERROR $errFile)
-if [ \$errorCount .gt 0 ]
+errorCount=$(fgrep -ic ERROR $errFile)
+if [ \$errorCount -gt 0 ]
 then
 	echo Found ERROR in $errFile
 else
 	tabix ${outfiles[0]}
 	for (( i=0; i<2; ++i ))
 	do 
-		mv ${OUTPUTFILES[\$i]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${OUTPUTFILES[\$i]} 
+		mv ${outfiles[\$i]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[\$i]} 
 	done
 	fi
 fi

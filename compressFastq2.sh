@@ -26,7 +26,7 @@ OUTPUTFILES="${ID}.r2.fastq.nottested.gz ${ID}.r1.fastq.gz.waitingforr2"
 WRITTENFILES="${ID}.r2.fastq.nottested.gz"
 
 # HMEM will be read and used to request hmem for the script
-HMEM=1G
+HVMEM=1G
 
 NCORES=1
 SCRATCH=1G

@@ -8,7 +8,7 @@ TEMPFOLDER=fastq2bamtemp
 INPUTFOLDER=fastq
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
-INPUTFILES="${ID}_sorted_unique.cleaned.r1.fastq.gz ${ID}_sorted_unique.cleaned.r2.fastq.gz"
+INPUTFILES="${ID}_sorted_unique.r1.fastq.gz ${ID}_sorted_unique.r2.fastq.gz"
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
 OUTPUTFOLDER=sam

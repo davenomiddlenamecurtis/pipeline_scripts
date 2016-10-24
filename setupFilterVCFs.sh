@@ -24,7 +24,7 @@ if [ -e $tempIDFile ] ; then rm $tempIDFile; fi
 doing=0
 cat $REALIDFILE | while read ID
 do
-	if [ -e /$PIPELINEHOMEFOLDER/gVCF/${ID}.gvcf.gz ] ; then continue; fi
+	if [ -e /$PIPELINEHOMEFOLDER/filteredVCF/${ID}.filtered.vcf.gz ] ; then continue; fi
 	echo $ID >> $tempIDFile
 	doing=$(( doing + 1 ))
 	if [ $doing -ge $numberToDo ] ; then break; fi
