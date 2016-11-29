@@ -24,7 +24,9 @@ TMEM=8G
 
 NCORES=6
 SCRATCH=1G
-NHOURS=24
+NHOURS=72
+
+# NHOURS was 24 but maybe not always enough for genome?
 
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files
@@ -39,7 +41,7 @@ NHOURS=24
 
 COMMANDS
 
-target=/cluster/project8/vyp/exome_sequencing_multisamples/target_region/data/merged_exome_target_bed
+# targetArgument=-L /cluster/project8/vyp/exome_sequencing_multisamples/target_region/data/merged_exome_target_bed
 # only for exomes!!!
 
 # everything else is set in alignParsFile.txt
@@ -82,8 +84,7 @@ $java -Djava.io.tmpdir=${javaTemp} -Xmx8g  -Xms8g  -jar $GATK -T HaplotypeCaller
 	-rf NotPrimaryAlignment \
 	-stand_call_conf 30.0 \
 	-stand_emit_conf 10.0 \
-	--GVCFGQBands 10 --GVCFGQBands 20 --GVCFGQBands 60 \
-	-L $target \
+	--GVCFGQBands 10 --GVCFGQBands 20 --GVCFGQBands 60 $targetArgument \
 	-variant_index_type LINEAR -variant_index_parameter 128000 \
 	-o ${ID}.gvcf &> ${outfiles[0]}.out
 cat ${outfiles[0]}.out

@@ -18,4 +18,5 @@ fasta=$referenceFolder/reference_datasets/human_reference_sequence/human_g1k_v37
 bamreadcount=/share/apps/genomics/bam-readcount/build/bin/bam-readcount
 igv=/share/apps/genomics/IGV_2.3.80/igv.sh
 Rscript=/share/apps/R/bin/Rscript
-Rbin=/share/apps/R/bin/R 
+Rbin=/share/apps/R/bin/R
+picard=/cluster/project8/vyp/vincent/Software/picard-tools-2.3.0

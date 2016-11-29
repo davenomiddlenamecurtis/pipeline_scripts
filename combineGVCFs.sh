@@ -79,7 +79,7 @@ echo #!/bin/bash > $tempScript
 echo $java -Xmx6g -jar $GATK \\\\>> $tempScript
 echo -R $fasta  \\\\>> $tempScript
 echo -T CombineGVCFs  \\\\>> $tempScript 
-# did also have     -L $chr \\
+# did also have     -L $chr \\ 
 cat $PIPELINEHOMEFOLDER/$INPUTFOLDER/$INPUTFILES | while read gVCF
 do
 	echo --variant $gVCF \\\\>> $tempScript 

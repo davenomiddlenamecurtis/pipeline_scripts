@@ -99,7 +99,7 @@ echo -o $tempFolder/${outfiles[0]} >> $tempScript
 
 bash $tempScript
 
-tabix -p vcf $tempFolder/${outfiles[0]}
+tabix -f -p vcf $tempFolder/${outfiles[0]}
 
 ls -l
 

@@ -162,6 +162,7 @@ do
 	fi
 	cd $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$i]}
 	for f in $outfiles; do if [ ! -e $f -o ! -s $f ]; then filemissing=yes; fi; done
+# note that -s will fail for symbolic links, need real output files
 	if [ $filemissing = no ]
 	then
 		if [ ! $i -eq $((SCRIPTNUMBER - 1)) ]
@@ -184,7 +185,8 @@ do
 	fi
 	# I'm not really sure if I should be making this folder if it doesn't exist
 	cd $PIPELINEHOMEFOLDER/${INPUTFOLDER[$i]}
-	for f in $infiles; do if [ ! -e $f -o ! -s $f ]; then filemissing=yes; fi; done
+	for f in $infiles; do if [ ! -e $f ]; then filemissing=yes; fi; done
+# this used to also test ! -s but that fails if input files are symbolic links
 	if [ $filemissing = no ]
 	then
 		SCRIPTSTORUNNUMBER=$(( SCRIPTSTORUNNUMBER + 1 ))
@@ -318,7 +320,7 @@ echo "
 	then
 		cd $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$d]}
 		alldone=yes
-		for f in ${OUTPUTFILES[d]} ; do if [ ! -e \$f -o ! -s \$f ]; then alldone=no; fi; done
+		for f in ${OUTPUTFILES[$d]} ; do if [ ! -e \$f -o ! -s \$f ]; then alldone=no; fi; done
 		if [ \$alldone = yes ]
 		then
 			echo No need to run $scriptname because all output files of downstream script $ID.$PIPELINENAME.${SCRIPTARRAY[$d]}.sh exist:

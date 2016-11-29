@@ -1,5 +1,14 @@
 #!/bin/bash
 
+ID=SSSDNM
+# specify the cohort for these VCF files
+
+if [ -z $ID ]
+then
+	echo Error: Must set ID to identify cohort to assign to these VCF files (e.g. BPWGS)
+fi
+
+
 maxToCombine=100
 gVCFfolder=$PIPELINEHOMEFOLDER/combinedGVCF
 
@@ -19,7 +28,6 @@ then
 	exit
 fi
 
-ID=SSSDNM
 rm $gVCFfolder/$ID.lst
 inFile=0
 cat $REALIDFILE | while read gVCFID

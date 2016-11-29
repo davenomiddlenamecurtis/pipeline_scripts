@@ -74,6 +74,14 @@ $java17 -Djava.io.tmpdir=$scratchFolder -Xmx4g -jar \
 		   FASTQ=$scratchFolder/${outfiles[0]}  \
 		   SECOND_END_FASTQ=$scratchFolder/${outfiles[1]} \
 		   1> $workFolder/$ID.out 2> $workFolder/$ID.err
+
+# $java17 -Djava.io.tmpdir=$scratchFolder -Xmx4g -jar \
+# 		   $picard/SamToFastq.jar \
+# 		   INPUT=$PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]} \
+# 		   FASTQ=$scratchFolder/${outfiles[0]}  \
+# 		   SECOND_END_FASTQ=$scratchFolder/${outfiles[1]} \
+# 		   1> $workFolder/$ID.out 2> $workFolder/$ID.err
+		   
 		   # try to pipe output and error to file and then check for errors 
 date
 exceptCount=$(fgrep -c PicardException $workFolder/$ID.err )

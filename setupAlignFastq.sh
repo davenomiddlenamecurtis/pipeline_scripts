@@ -36,7 +36,8 @@ done
 export PIPELINENAME=alignFastqPipeline
 export PIPELINESCRIPTSFOLDER=/home/rejudcu/pipeline_scripts
 # export PIPELINESCRIPTS="runNovoalign.sh removeDuplicates.sh concordantSam2Bam.sh discordantSam2Bam.sh sortConcordantBam.sh sortDiscordantBam.sh"
-export PIPELINESCRIPTS="runNovoalign.sh discordantSam2Bam.sh sortConcordantBam.sh sortDiscordantBam.sh"
+# export PIPELINESCRIPTS="runNovoalign.sh discordantSam2Bam.sh sortConcordantBam.sh sortDiscordantBam.sh"
+export PIPELINESCRIPTS="runNovoalign.with.unpaired.sh discordantSam2Bam.sh sortConcordantBam.sh sortDiscordantBam.sh"
 export IDFILE=$tempIDFile
 
 export ATTEMPTS=1
@@ -46,6 +47,7 @@ export PIPELINEPARSFILE=$PIPELINESCRIPTSFOLDER/alignParsFile.txt
 logFile=${0##*/}
 logFile=$PIPELINEHOMEFOLDER/pipelinetempfolder/${logFile%.sh}.log
 doing=`cat $IDFILE | wc -l`
+# because doing was inside a loop in a different bash shell
 if [ $doing -gt 0 ]
 then
 	bash $PIPELINESCRIPTSFOLDER/buildPipeline.sh  

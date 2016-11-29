@@ -9,7 +9,7 @@ fi
 REALIDFILE=$PIPELINEHOMEFOLDER/filterThese.txt
 if [ ! -e $REALIDFILE ]
 then
-	echo Error: There must be a file called $REALIDFILE containing the IDs to be aligned
+	echo Error: There must be a file called $REALIDFILE containing the IDs of the vcf.gz files to be filtered, e.g. BPWGS.1, BPWGS.2 
 	exit
 fi
 
@@ -29,9 +29,6 @@ do
 	doing=$(( doing + 1 ))
 	if [ $doing -ge $numberToDo ] ; then break; fi
 done
-
-# echo LP0022129-DNA_A01 > $PROJECTDIR/BPGIDs/doThese.txt
-# just to check
 
 export PIPELINENAME=filterVCFPipeline
 export PIPELINESCRIPTSFOLDER=/home/rejudcu/pipeline_scripts
