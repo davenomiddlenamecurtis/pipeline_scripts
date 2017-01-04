@@ -28,12 +28,16 @@ OUTPUTFILES="${ID}.r1.fastq ${ID}.r2.fastq"
 WRITTENFILES="${ID}.r1.fastq ${ID}.r2.fastq"
 
 # HVMEM will be read and used to request hvmem for the script
-HVMEM=6G
-TMEM=6G
+HVMEM=16G
+TMEM=16G
 NCORES=1
 SCRATCH=1G
 # NHOURS 20
-NHOURS=60
+NHOURS=2
+
+# Had above as 6 and got this error:
+# There is insufficient memory for the Java Runtime Environment to continue
+
 
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files
@@ -52,7 +56,8 @@ NHOURS=60
 
 COMMANDS
 
-picard=/cluster/project8/vyp/vincent/Software/picard-tools-1.100
+# picard=/cluster/project8/vyp/vincent/Software/picard-tools-1.100
+picard=/home/rejudcu/picard.2.7.1/picard.jar
 
 # do not bother trying to use scratch0 folder because fastq files for each ID come to 300G
 scratchFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
@@ -67,12 +72,13 @@ infiles=($INPUTFILES)
 outfiles=($OUTPUTFILES)
 date
 echo running $picard/SamToFastq.jar
-$java17 -Djava.io.tmpdir=$scratchFolder -Xmx4g -jar \
-		   $picard/SamToFastq.jar \
-		   INPUT=$PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]} \
+$java -Djava.io.tmpdir=$scratchFolder -Xmx4g -jar \
+ 		   $picard SamToFastq \
+ 		   INPUT=$PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]} \
 		   FASTQ=$scratchFolder/${outfiles[0]}  \
-		   SECOND_END_FASTQ=$scratchFolder/${outfiles[1]} \
-		   1> $workFolder/$ID.out 2> $workFolder/$ID.err
+ 		   SECOND_END_FASTQ=$scratchFolder/${outfiles[1]} \
+		   UNPAIRED_FASTQ=$scratchFolder/$ID.unpaired.fastq
+ 		   1> $workFolder/$ID.out 2> $workFolder/$ID.err
 
 # $java17 -Djava.io.tmpdir=$scratchFolder -Xmx4g -jar \
 # 		   $picard/SamToFastq.jar \
@@ -83,7 +89,7 @@ $java17 -Djava.io.tmpdir=$scratchFolder -Xmx4g -jar \
 		   
 		   # try to pipe output and error to file and then check for errors 
 date
-exceptCount=$(fgrep -c PicardException $workFolder/$ID.err )
+exceptCount=$(fgrep PicardException $workFolder/$ID.err | fgrep -c -v 'unpaired mates')
 if [ $exceptCount -gt 0 ]
 then
 	echo Error - exception in picard/SamToFastq.jar
@@ -95,6 +101,7 @@ else
 	if [ ! -e $scratchFolder/${outfiles[0]} -o ! -e $scratchFolder/${outfiles[1]} ]
 	then
 		echo Error - $scratchFolder/${outfiles[0]} and $scratchFolder/${outfiles[1]} not written
+		ls -l $scratchFolder
 		echo $workFolder/$ID.err:
 		cat $workFolder/$ID.err
 		# rm -r $scratchFolder
@@ -110,6 +117,11 @@ else
 			echo Error - sizes of fastq files are not equal
 			rm -r $scratchFolder
 		else
+			if [ -e $scratchFolder/$ID.unpaired.fastq -a -s $scratchFolder/$ID.unpaired.fastq  ]
+			then
+				gzip -c $scratchFolder/$ID.unpaired.fastq > $scratchFolder/$ID.unpaired.fastq.gz
+				mv $scratchFolder/$ID.unpaired.fastq.gz $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/$ID.unpaired.fastq.gz
+			fi
 			mv $scratchFolder/${outfiles[0]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[0]}
 			mv $scratchFolder/${outfiles[1]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[1]}
 			# assumes they are on same file system so mv is instant - does not work if using scratch0

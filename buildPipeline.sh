@@ -267,6 +267,16 @@ do
 echo set +e >> $scriptname
 # this should switch off errexit to prevent script exiting by default if no proper exit code from child process
 
+# I want to make sure that every time I cd to a directory it actually works
+echo "
+function cdcheck {
+	cd \$1
+	TESTDIR=\`pwd\`
+	if [ \$TESTDIR != \$1 ] ; then echo could not cd to \$1, will exit ; exit;  fi
+}
+"  >> $scriptname
+# this should work as long as full pathname is always used, which is what I want
+
 # here is where to write all the variables which need to be set
 if [ ! -z "$PIPELINEPARSFILE" ]
 then
@@ -299,7 +309,7 @@ mkdir $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$i]}
 # if all input files not present then exit with error
 	echo "
 set -x
-cd $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$i]}
+cdcheck $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$i]}
 outfiles=\"${OUTPUTFILES[$i]}\"
 alldone=yes
 for f in \$outfiles; do if [ ! -s \$f -o ! -e \$f ]; then alldone=no; fi; done
@@ -318,7 +328,7 @@ do
 echo "
 	if [ -e $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$d]} ]
 	then
-		cd $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$d]}
+		cdcheck $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$d]}
 		alldone=yes
 		for f in ${OUTPUTFILES[$d]} ; do if [ ! -e \$f -o ! -s \$f ]; then alldone=no; fi; done
 		if [ \$alldone = yes ]
@@ -333,16 +343,16 @@ done
 
 echo "
 # if only some outfiles to be written exist, delete all of them
-cd $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$i]}
+cdcheck $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$i]}
 writtenfiles=\"${WRITTENFILES[$i]}\"
 for f in \$writtenfiles; do if [ -e \$f ]; then rm \$f; fi; done
 # do the same for any created in temporary folder
-cd $PIPELINEHOMEFOLDER/${TEMPFOLDER[$i]}
+cdcheck $PIPELINEHOMEFOLDER/${TEMPFOLDER[$i]}
 writtenfiles=\"${WRITTENFILES[$i]}\"
 for f in \$writtenfiles; do if [ -e \$f ]; then rm \$f; fi; done
 
 
-cd $PIPELINEHOMEFOLDER/${INPUTFOLDER[$i]}
+cdcheck $PIPELINEHOMEFOLDER/${INPUTFOLDER[$i]}
 infiles=\"${INPUTFILES[$i]}\"
 for f in \$infiles
 do 
@@ -370,7 +380,7 @@ done
 
 # check if all output files created OK and if not delete all of them
 	echo "
-cd $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$i]}
+cdcheck $PIPELINEHOMEFOLDER/${OUTPUTFOLDER[$i]}
 outfiles=\"${OUTPUTFILES[$i]}\"
 alldone=yes
 for f in \$outfiles; do if [ ! -s \$f ]; then rm \$f; fi; done
@@ -405,7 +415,7 @@ alldone=yes
 for f in \$outfiles; do if [ ! -e \$f ]; then alldone=no; fi; done
 if [ \$alldone = yes ]
 then
-	cd $PIPELINEHOMEFOLDER/${INPUTFOLDER[$i]}
+	cdcheck $PIPELINEHOMEFOLDER/${INPUTFOLDER[$i]}
 	for f in ${INPUTFILES[$i]}
 	do
 		if [ ${INPUTFOLDER[$i]} = ${INPUTFOLDER[$i]} ]

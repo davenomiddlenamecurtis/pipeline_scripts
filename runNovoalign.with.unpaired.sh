@@ -1,5 +1,10 @@
 # template for a script to be part of pipeline
 
+# this script differs in that one of the input files, a fastq with unpaired reads, may or may not be present
+# plan is to align these reads with standard commands, including samblaster which marks duplicates
+# I assume samblaster will write no reads as being discordant because they are all single
+# then align paired reads and merge unpaired reads with the "concordant" bam
+
 # TEMPFOLDER is the place for intermediate files belonging to the script in main project space
 # except for SCRATCHFOLDER all folders will be relative to PIPELINEHOMEFOLDER
 TEMPFOLDER=fastq2bamtemp
@@ -46,8 +51,9 @@ COMMANDS
 
 workFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
 # this needs to be on same system as OUTPUTFOLDER so can do fast mv
-scratchFolder=/scratch0/runNovoalignTemp/$ID
-mkdir /scratch0/runNovoalignTemp
+scratchFolder=/scratch0/rejudcu/runNovoalignTemp/$ID
+mkdir /scratch0/rejudcu
+mkdir /scratch0/rejudcu/runNovoalignTemp
 mkdir $scratchFolder
 
 infiles=($INPUTFILES)
@@ -66,6 +72,8 @@ reference=1kg
 code=$ID
 f1=$PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]}
 f2=$PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[1]}
+unpairedFastq=$PIPELINEHOMEFOLDER/$INPUTFOLDER/$ID.unpaired.fastq.gz
+unpairedBam=$ID.unpaired.bam
 output=$PIPELINEHOMEFOLDER/$OUTPUTFOLDER
 tempFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER
 
@@ -109,29 +117,57 @@ fasta=$scratchFolder/${fasta##*/}
 novoalignRef=$scratchFolder/${novoalignRef##*/}
 
 date
+OK=yes
 mkdir $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/
 # $novoalign -c ${ncores} -o SAM $'@RG\tID:${extraID}${code}\tSM:${extraID}${code}\tLB:${extraID}$code\tPL:ILLUMINA' --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f ${f1} ${f2}  -d ${novoalignRef} | ${samblaster} -e -d ${output}/${code}_disc.sam  | ${samtools} view -Sb - > ${output}/${code}.bam
 # above does not expand correctly the way I am writing scripts, should be:
-$novoalign -c ${ncores} -o SAM \$"@RG\\tID:${code}\\tSM:${code}\\tLB:$code\\tPL:ILLUMINA" --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f ${f1} ${f2}  -d ${novoalignRef} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err | ${samblaster} -e -d $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[1]} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err | ${samtools} view -Sb -o $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} - 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samtools.err
-date
-OK=yes
-countDone=\$(fgrep -c Done $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err)
-if [ \$countDone -eq 0 ]
+
+if [ -e $unpairedFastq ]
 then
-	echo Problem running $novoalign, log file did not include \"Done\"
-	echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err:
-	cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
-	echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
-	echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err:
-	cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
-	echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
-	echo ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
-	ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
-	echo ls -l $scratchFolder
-	ls -l $scratchFolder
-	echo df
-	df
-	OK=no
+	rm -f $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam
+	$novoalign -c ${ncores} -o SAM \$"@RG\\tID:${code}\\tSM:${code}\\tLB:$code\\tPL:ILLUMINA" --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f $unpairedFastq  -d ${novoalignRef} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err | ${samblaster} -e -d $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[1]} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err | ${samtools} view -Sb -o $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam - 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samtools.err
+	countDone=\$(fgrep -c Done $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err)
+	if [ \$countDone -eq 0 -o $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[1]} -o ! -e $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam ]
+	then
+		echo Problem running $novoalign on $unpairedFastq, log file did not include \"Done\" or a discordant bam was output or no bam output
+		echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err:
+		cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
+		echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
+		echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err:
+		cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
+		echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
+		echo ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+		ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+		echo ls -l $scratchFolder
+		ls -l $scratchFolder
+		echo df
+		df
+		OK=no
+	fi
+fi
+
+if [ \$OK = yes ]
+then
+	$novoalign -c ${ncores} -o SAM \$"@RG\\tID:${code}\\tSM:${code}\\tLB:$code\\tPL:ILLUMINA" --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f ${f1} ${f2}  -d ${novoalignRef} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err | ${samblaster} -e -d $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[1]} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err | ${samtools} view -Sb -o $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} - 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samtools.err
+	date
+	countDone=\$(fgrep -c Done $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err)
+	if [ \$countDone -eq 0 ]
+	then
+		echo Problem running $novoalign, log file did not include \"Done\"
+		echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err:
+		cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
+		echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
+		echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err:
+		cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
+		echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
+		echo ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+		ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+		echo ls -l $scratchFolder
+		ls -l $scratchFolder
+		echo df
+		df
+		OK=no
+	fi
 fi
 if [ ! -e $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} -o ! -s $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} ]
 then
@@ -150,6 +186,18 @@ then
 		ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
 		OK=no
 	fi
+fi
+
+if [ \$OK = yes -a -e $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam ]
+then
+	rm -f $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/tomerge.bam
+	mv $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/tomerge.bam
+	$java17 -Djava.io.tmpdir=$scratchFolder -Xmx4g -jar \
+		$picard/MergeSamFiles \
+		INPUT=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/tomerge.bam \
+		INPUT=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam \
+		OUTPUT=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]}
+# may need to introduce some error checking here
 fi
 
 if [ \$OK = yes ]
