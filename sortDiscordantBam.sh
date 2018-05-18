@@ -28,15 +28,17 @@ WRITTENFILES="${ID}_disc_sorted.bam ${ID}_disc_sorted.bam.bai"
 # There is  some risk that the sorted_unique input files will have got moved to the output folder but this shouldn't happen if all else is OK.
 
 # HVMEM will be read and used to request hvmem for the script
-HVMEM=8G
-TMEM=8G
+# HVMEM=8G
+# TMEM=8G
+HVMEM=3G
+TMEM=3G
 # these were 3 G
 
 # neeed more memory to run java
 NCORES=6
 SCRATCH=1G
-NHOURS=240
-
+# NHOURS=240
+NHOURS=24
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files
 # must be constructed so that complete output files are produced promptly, usually with a mv commands
@@ -95,6 +97,7 @@ then
 	rm -r $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
 	chmod 700 $PIPELINEHOMEFOLDER/fastq/${ID}.r?.fastq.gz
 	rm $PIPELINEHOMEFOLDER/fastq/${ID}.r?.fastq.gz
+	rm $PIPELINEHOMEFOLDER/$INPUTFOLDER/${ID}_conc.bam $PIPELINEHOMEFOLDER/$INPUTFOLDER/${ID}_disc.bam
 else 
 	echo Error: $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[1]} was not written correctly
 fi

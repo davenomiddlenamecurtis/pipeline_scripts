@@ -12,7 +12,7 @@
 # the first bit will only work if nodes have internet access
 # if not, download files initially then run rest of scripts
 
-manifest=$PROJECTDIR/SSSDNM/SRRIDs/manifest_36857_11-09-2015_s.txt
+manifest=$PROJECTDIR/SSSDNM/SRRIDs/manifest_36856_01-22-2018_s.csv
 export DBGAPDOWNLOADFOLDER=$PROJECTDIR/newdownloads
 export PIPELINEHOMEFOLDER=$PROJECTDIR/SSSDNM
 

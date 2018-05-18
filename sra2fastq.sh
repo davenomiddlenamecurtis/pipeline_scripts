@@ -24,7 +24,7 @@ OUTPUTFILES=${ID}.extractedOK.txt
 
 # WRITTENFILES is a list of output files $PIPELINEHOMEFOLDER/$OUTPUTFOLDER actually written by this script
 # if one is missing or zero length all will be deleted before the script runs
-WRITTENFILES="${ID}.r1.fastq.gz ${ID}.r2.fastq.gz"
+WRITTENFILES="${ID}.extractedOK.txt ${ID}.r1.fastq.gz ${ID}.r2.fastq.gz"
 # leave out testing with gzip
 
 # HVMEM will be read and used to request hvmem for the script

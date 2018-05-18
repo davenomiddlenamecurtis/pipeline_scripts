@@ -76,13 +76,13 @@ do
 	if [ ! -e $DBGAPDOWNLOADFOLDER/sra/$sra.sra ]
 	then
 		OK=no
-		Echo error in $0, did not create file $DBGAPDOWNLOADFOLDER/sra/$sra.sra
+		echo error in $0, did not create file $DBGAPDOWNLOADFOLDER/sra/$sra.sra
 		break
 	fi
 	if [ ! -s $DBGAPDOWNLOADFOLDER/sra/$sra.sra ]
 	then
 		OK=no
-		Echo error in $0, file $DBGAPDOWNLOADFOLDER/sra/$sra.sra is empty
+		echo error in $0, file $DBGAPDOWNLOADFOLDER/sra/$sra.sra is empty
 		break
 	fi
 done

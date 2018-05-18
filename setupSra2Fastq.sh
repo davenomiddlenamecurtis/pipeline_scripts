@@ -28,7 +28,7 @@ done
 # echo SRR1520426 > $PROJECTDIR/SSSDNM/SRRIDs/doThese.txt
 # just to check
 
-export PIPELINENAME=alignSraPipeline
+export PIPELINENAME=sortSraPipeline
 export PIPELINESCRIPTSFOLDER=/home/rejudcu/pipeline_scripts
 export PIPELINESCRIPTS="sra2fastq.sh"
 export IDFILE=$PROJECTDIR/SSSDNM/SRRIDs/doThese.txt

@@ -25,14 +25,17 @@ OUTPUTFILES="${ID}_sorted_unique.bam ${ID}_sorted_unique.bam.bai ${ID}_disc.bam"
 WRITTENFILES="${ID}_sorted_unique.bam ${ID}_sorted_unique.bam.bai" 
 
 # HVMEM will be read and used to request hvmem for the script
-HVMEM=8G
-TMEM=8G
+# HVMEM=8G
+# TMEM=8G
+HVMEM=3G
+TMEM=3G
 # these were 3 G
 
 # neeed more memory to run java
 NCORES=6
 SCRATCH=1G
-NHOURS=240
+# NHOURS=240
+NHOURS=24
 
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files

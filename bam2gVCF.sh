@@ -77,9 +77,11 @@ rm $workFolder/*
 date
 cd $workFolder
 
+# DBSNPS=${bundle}/dbsnp_137.b37.vcf
+
 # edited parameters to match those in WGS/WGS_pipeline.sh on 25/8/16
 $java -Djava.io.tmpdir=${javaTemp} -Xmx8g  -Xms8g  -jar $GATK -T HaplotypeCaller -R $fasta -I $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]} \
-	--dbsnp ${bundle}/dbsnp_137.b37.vcf \
+	--dbsnp $DBSNPS \
 	--emitRefConfidence GVCF \
 	-rf NotPrimaryAlignment \
 	-stand_call_conf 30.0 \

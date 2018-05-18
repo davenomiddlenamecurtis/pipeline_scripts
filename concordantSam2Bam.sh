@@ -29,7 +29,8 @@ TMEM=8G
 # neeed more memory to run java
 NCORES=6
 SCRATCH=1G
-NHOURS=240
+# NHOURS=240
+NHOURS=24
 
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files

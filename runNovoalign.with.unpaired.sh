@@ -5,6 +5,8 @@
 # I assume samblaster will write no reads as being discordant because they are all single
 # then align paired reads and merge unpaired reads with the "concordant" bam
 
+# this was causing IO problems so I am going to move to do the main work on scratch0
+
 # TEMPFOLDER is the place for intermediate files belonging to the script in main project space
 # except for SCRATCHFOLDER all folders will be relative to PIPELINEHOMEFOLDER
 TEMPFOLDER=fastq2bamtemp
@@ -27,14 +29,21 @@ OUTPUTFILES="${ID}_conc.bam ${ID}_disc.sam"
 WRITTENFILES="${ID}_conc.bam ${ID}_disc.sam"
 
 # HVMEM will be read and used to request hvmem for the script
-HVMEM=8G
-TMEM=8G
+# HVMEM=8G
+# TMEM=8G
+HVMEM=5G
+TMEM=5G
 # these were 3 G
 
 # neeed more memory to run java
 NCORES=6
-SCRATCH=10G
-NHOURS=480
+# SCRATCH=100G was taking ages to queue
+SCRATCH=15G 
+# SCRATCH=10G was running out
+# NHOURS=480
+NHOURS=16
+# NHOURS=40
+# should be enough for an exome, we will see - there were two for which 16 was not enough
 
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files
@@ -51,6 +60,10 @@ COMMANDS
 
 workFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
 # this needs to be on same system as OUTPUTFOLDER so can do fast mv
+# I will change this
+rm -fr $workFolder
+mkdir $workFolder
+
 scratchFolder=/scratch0/rejudcu/runNovoalignTemp/$ID
 mkdir /scratch0/rejudcu
 mkdir /scratch0/rejudcu/runNovoalignTemp
@@ -69,10 +82,16 @@ inputFormat=STDFQ
 reference=1kg
 
 # keep Vincent's naming convention where code refers to individual subject
+cd $scratchFolder
+rm -f $scratchFolder/*
 code=$ID
-f1=$PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[0]}
-f2=$PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[1]}
-unpairedFastq=$PIPELINEHOMEFOLDER/$INPUTFOLDER/$ID.unpaired.fastq.gz
+f1=${infiles[0]}
+f2=${infiles[1]}
+for f in $f1 $f2
+do
+  cp $PIPELINEHOMEFOLDER/$INPUTFOLDER/$f .
+done
+unpairedFastq=$ID.unpaired.fastq.gz
 unpairedBam=$ID.unpaired.bam
 output=$PIPELINEHOMEFOLDER/$OUTPUTFOLDER
 tempFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER
@@ -118,92 +137,109 @@ novoalignRef=$scratchFolder/${novoalignRef##*/}
 
 date
 OK=yes
-mkdir $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/
 # $novoalign -c ${ncores} -o SAM $'@RG\tID:${extraID}${code}\tSM:${extraID}${code}\tLB:${extraID}$code\tPL:ILLUMINA' --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f ${f1} ${f2}  -d ${novoalignRef} | ${samblaster} -e -d ${output}/${code}_disc.sam  | ${samtools} view -Sb - > ${output}/${code}.bam
 # above does not expand correctly the way I am writing scripts, should be:
 
 if [ -e $unpairedFastq ]
 then
 	rm -f $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam
-	$novoalign -c ${ncores} -o SAM \$"@RG\\tID:${code}\\tSM:${code}\\tLB:$code\\tPL:ILLUMINA" --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f $unpairedFastq  -d ${novoalignRef} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err | ${samblaster} -e -d $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[1]} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err | ${samtools} view -Sb -o $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam - 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samtools.err
-	countDone=\$(fgrep -c Done $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err)
-	if [ \$countDone -eq 0 -o $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[1]} -o ! -e $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam ]
+	$novoalign -c ${ncores} -o SAM \$"@RG\\tID:${code}\\tSM:${code}\\tLB:$code\\tPL:ILLUMINA" --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f $unpairedFastq  -d ${novoalignRef} 2> novoalign.err | ${samblaster} -e -d ${outfiles[1]} 2> samblaster.err | ${samtools} view -Sb -o $unpairedBam - 2> samtools.err
+	date
+	cp *.err $workFolder
+	countDone=\$(fgrep -c Done novoalign.err)
+	if [ \$countDone -eq 0 -o -e ${outfiles[1]} -o ! -e $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam ]
 	then
 		echo Problem running $novoalign on $unpairedFastq, log file did not include \"Done\" or a discordant bam was output or no bam output
-		echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err:
-		cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
-		echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
-		echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err:
-		cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
-		echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
-		echo ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
-		ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+		echo $workFolder/novoalign.err:
+		cat $workFolder/novoalign.err
+		echo end of $workFolder/novoalign.err
+		echo $workFolder/samblaster.err:
+		cat $workFolder/samblaster.err
+		echo end of $workFolder/samblaster.err
+		echo ls -l $workFolder
+		ls -l $workFolder
 		echo ls -l $scratchFolder
 		ls -l $scratchFolder
-		echo df
-		df
+		echo df -h
+		df -h
 		OK=no
+	else
+		cp $unpairedBam $workFolder/$unpairedBam
 	fi
 fi
 
 if [ \$OK = yes ]
 then
-	$novoalign -c ${ncores} -o SAM \$"@RG\\tID:${code}\\tSM:${code}\\tLB:$code\\tPL:ILLUMINA" --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f ${f1} ${f2}  -d ${novoalignRef} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err | ${samblaster} -e -d $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[1]} 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err | ${samtools} view -Sb -o $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} - 2> $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samtools.err
+	pwd
+	ls -lh
 	date
-	countDone=\$(fgrep -c Done $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err)
+	$novoalign -c ${ncores} -o SAM \$"@RG\\tID:${code}\\tSM:${code}\\tLB:$code\\tPL:ILLUMINA" --rOQ --hdrhd 3 -H -k -a -o Soft -t ${tparam} -F ${inputFormat} -f ${f1} ${f2}  -d ${novoalignRef} 2> novoalign.err | ${samblaster} -e -d ${outfiles[1]} 2> samblaster.err | ${samtools} view -Sb -o ${outfiles[0]} - 2> samtools.err
+	date
+	cp *.err $workFolder
+	countDone=\$(fgrep -c Done $workFolder/novoalign.err)
 	if [ \$countDone -eq 0 ]
 	then
 		echo Problem running $novoalign, log file did not include \"Done\"
-		echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err:
-		cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
-		echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/novoalign.err
-		echo $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err:
-		cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
-		echo end of $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
-		echo ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
-		ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+		echo $workFolder/novoalign.err:
+		cat $workFolder/novoalign.err
+		echo end of $workFolder/novoalign.err
+		echo $workFolder/samblaster.err:
+		cat $workFolder/samblaster.err
+		echo end of $workFolder/samblaster.err
+		echo ls -l $workFolder
+		ls -l $workFolder
 		echo ls -l $scratchFolder
 		ls -l $scratchFolder
 		echo df
 		df
 		OK=no
+	else
+		cp $OUTPUTFILES $workFolder
 	fi
 fi
-if [ ! -e $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} -o ! -s $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} ]
+if [ ! -e $workFolder/${outfiles[0]} -o ! -s $workFolder/${outfiles[0]} ]
 then
-	echo Error: $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} was not written correctly
-	ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+	echo Error: $workFolder/${outfiles[0]} was not written correctly
+	ls -l $workFolder
+	ls -l $scratchFolder
+	OK=no
+fi
+if [ ! -e $workFolder/${outfiles[1]} -o ! -s $workFolder/${outfiles[1]} ]
+then
+	echo Error: $workFolder/${outfiles[1]} was not written correctly
+	ls -l $workFolder
 	ls -l $scratchFolder
 	OK=no
 fi
 if [ \$OK = yes ]
 then
-	countMarked=\$(fgrep -c Marked $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err)
+	countMarked=\$(fgrep -c Marked $workFolder/samblaster.err)
 	if [ \$countMarked -eq 0 ]
 	then
 		echo Problem running $samblaster, log file did not include \"Marked\"
-		cat $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/samblaster.err
-		ls -l $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
+		cat $workFolder/samblaster.err
+		ls -l $workFolder
 		OK=no
 	fi
 fi
 
-if [ \$OK = yes -a -e $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam ]
+if [ \$OK = yes -a -e $workFolder/$unpairedBam ]
 then
-	rm -f $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/tomerge.bam
-	mv $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/tomerge.bam
+	rm -f tomerge.bam
+	mv ${outfiles[0]} tomerge.bam
 	$java17 -Djava.io.tmpdir=$scratchFolder -Xmx4g -jar \
 		$picard/MergeSamFiles \
-		INPUT=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/tomerge.bam \
-		INPUT=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/$unpairedBam \
-		OUTPUT=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]}
+		INPUT=tomerge.bam \
+		INPUT=$unpairedBam \
+		OUTPUT=$workFolder/${outfiles[0]}
+	cp ${outfiles[0]} $workFolder/${outfiles[0]}
 # may need to introduce some error checking here
 fi
 
 if [ \$OK = yes ]
 then
-	mv $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[0]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[0]}
-	mv $PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID/${outfiles[1]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[1]}
+	mv $workFolder/${outfiles[0]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[0]}
+	mv $workFolder/${outfiles[1]} $PIPELINEHOMEFOLDER/$OUTPUTFOLDER/${outfiles[1]}
 	echo $novoalign completed OK
 else
 	echo Error: problem running novoalign and samblaster - output files not written
