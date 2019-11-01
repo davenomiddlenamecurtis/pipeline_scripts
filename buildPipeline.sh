@@ -22,7 +22,8 @@ DEFAULTNCORES=1
 DEFAULTSCRATCH=1G
 DEFAULTNHOURS=3
 DEFAULTATTEMPTS=1
-DELETEINTERMEDIATES=no 
+DELETEINTERMEDIATES=no
+DEFAULTLOGINTERVAL=1h 
 
 # Notes
 # When I had no argument for exit, it would write ESC[H ESC[2J to stdout, which would clear the screen and would confuse cat (clears screen?) but would be invisible in more and the editor 	
@@ -207,6 +208,8 @@ done
 #$ -l h_rt=$DEFAULTNHOURS:0:0
 #$ -V
 #$ -R y	
+export READALLBASHRC=yes
+source ~/.bashrc 
 " > $scriptname
 if [ $OLDCLUSTER = yes ]
 then
@@ -277,6 +280,22 @@ function cdcheck {
 "  >> $scriptname
 # this should work as long as full pathname is always used, which is what I want
 
+# start logging
+
+echo " 
+rm $scriptname.log
+source $PIPELINESCRIPTSFOLDER/getMemUsage.sh
+( 
+while [ 1 == 1 ] 
+  do 
+    date >> $scriptname.log
+    getMemUsage >> $scriptname.log
+    free >> $scriptname.log
+    df >> $scriptname.log
+    sleep $DEFAULTLOGINTERVAL
+  done
+) &
+" >> $scriptname
 # here is where to write all the variables which need to be set
 if [ ! -z "$PIPELINEPARSFILE" ]
 then
@@ -433,6 +452,9 @@ then
 fi
 " >> $scriptname
 fi
+
+echo exit >> $scriptname
+# this is here because logging runs in background
 
 
 done

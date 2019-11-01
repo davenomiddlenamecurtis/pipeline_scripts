@@ -1,4 +1,5 @@
 # template for a script to be part of pipeline
+# taking as input gVCF with all chrs, just do one of them
 
 # TEMPFOLDER is the place for intermediate files belonging to the script in main project space
 # except for SCRATCHFOLDER all folders will be relative to PIPELINEHOMEFOLDER
@@ -8,7 +9,7 @@ TEMPFOLDER=genotypeGvcfstemp
 INPUTFOLDER=combinedGVCF
 
 # INPUTFILES is spec of input files in $PIPELINEHOMEFOLDER/$INPUTFOLDER (can have wildcards, usually will have $ID in it)
-INPUTFILES="$ID.lst $ID.chr"
+INPUTFILES="$ID.lst"
 
 # OUTPUTFOLDER is folder where to find output files, relative to $PIPELINEHOMEFOLDER
 OUTPUTFOLDER=vcf
@@ -27,7 +28,8 @@ TMEM=8G
 
 NCORES=6
 SCRATCH=1G
-NHOURS=72
+NHOURS=120
+# with 72 ran out of time for chromosomes 1 and 5
 
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files
@@ -48,7 +50,7 @@ scratchFolder=$PIPELINEHOMEFOLDER/$TEMPFOLDER/$ID
 mkdir $scratchFolder
 workFolder=$scratchFolder
 
-infiles=($INPUTFILES)
+infiles=($INPUTFILES) # makes an array
 outfiles=($OUTPUTFILES)
 
 # variables for alignment:
@@ -75,7 +77,8 @@ tempScript=$ID.tempScript.sh
 
 # lines below will be read and then written to script file with: echo "$line" >> $scriptname
 
-chr=`cat $PIPELINEHOMEFOLDER/$INPUTFOLDER/${infiles[1]}`
+chr=${ID%.lst}
+chr=${chr##*.}
 
 echo #!/bin/bash > $tempScript 
 echo $java -Xmx6g -jar $GATK \\\\>> $tempScript
@@ -105,7 +108,7 @@ ls -l
 
 # checks here
 
-for f in $outfiles
+for f in $OUTPUTFILES
 do
 	mv $tempFolder/\$f $outputFolder/\$f
 done

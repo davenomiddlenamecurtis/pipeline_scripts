@@ -25,7 +25,7 @@ TMEM=10G
 # need more memory to run java
 
 # NCORES=6
-# NHOURS=24
+NHOURS=24 # a few chromosomes did not work with the default, which I think is 3
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files
 # must be constructed so that complete output files are produced promptly, usually with a mv commands

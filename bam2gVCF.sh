@@ -17,12 +17,15 @@ OUTPUTFOLDER=gVCF
 OUTPUTFILES="${ID}.gvcf.gz ${ID}.gvcf.gz.tbi"
 
 # HVMEM will be read and used to request hvmem for the script
-HVMEM=8G
-TMEM=8G
+# HVMEM=8G
+# TMEM=8G
+HVMEM=3G
+TMEM=3G
 
 # need more memory to run java
 
-NCORES=6
+# NCORES=6
+NCORES=4
 SCRATCH=1G
 NHOURS=72
 
@@ -85,10 +88,12 @@ $java -Djava.io.tmpdir=${javaTemp} -Xmx8g  -Xms8g  -jar $GATK -T HaplotypeCaller
 	--emitRefConfidence GVCF \
 	-rf NotPrimaryAlignment \
 	-stand_call_conf 30.0 \
-	-stand_emit_conf 10.0 \
 	--GVCFGQBands 10 --GVCFGQBands 20 --GVCFGQBands 60 $targetArgument \
 	-variant_index_type LINEAR -variant_index_parameter 128000 \
 	-o ${ID}.gvcf &> ${outfiles[0]}.out
+
+#	-stand_emit_conf 10.0 # seems to be deprecated in GATK 3.7, so leave out and use default setting
+
 cat ${outfiles[0]}.out
 errorCount=$(fgrep -c ERROR ${outfiles[0]}.out)
 if [ \$errorCount -gt 0 ]

@@ -18,6 +18,8 @@ export PIPELINEHOMEFOLDER=$PROJECTDIR/SSSDNM
 
 SOURCESFOLDER=$PIPELINEHOMEFOLDER/sources
 FASTQFOLDER=$PIPELINEHOMEFOLDER/fastq
+BAMFOLDER=$PIPELINEHOMEFOLDER/bam
+
 if [ ! -e $SOURCESFOLDER ] ; then mkdir $SOURCESFOLDER; fi
 if [ ! -e $SOURCESFOLDER/sourceFilesWritten.txt ]
 then
@@ -61,6 +63,10 @@ ls $SOURCESFOLDER/*.sources.txt | while read ID
 do
 	ID=${ID##*/}
 	ID=${ID%.sources.txt}	
+	if [ -e $BAMFOLDER/${ID}_sorted_unique.bam ]
+	then
+	  continue
+	fi
 	if [ ! -e $FASTQFOLDER/$ID.r1.fastq.gz -o ! -e  $FASTQFOLDER/$ID.r2.fastq.gz ] 
 	then
 		if [ $doing -lt $numberToDo ]

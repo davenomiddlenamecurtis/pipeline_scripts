@@ -28,7 +28,10 @@ cat $REALIDFILE | while read gVCFID
 do
 	if [ $inFile -eq 0 ]
 	then 
-		echo $ID >> $tempIDFile
+		if [ ! -e $PIPELINEHOMEFOLDER/combinedGVCF/$ID.gvcf.gz.tbi ]
+		then
+			echo $ID >> $tempIDFile
+		fi
 	fi
 	echo $gVCFfolder/$gVCFID.gvcf.gz >> $gVCFfolder/$ID.lst
 	inFile=$(( inFile + 1 ))

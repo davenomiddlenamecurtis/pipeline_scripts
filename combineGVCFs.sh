@@ -20,14 +20,19 @@ OUTPUTFILES="$ID.gvcf.gz $ID.gvcf.gz.tbi"
 WRITTENFILES="$ID.gvcf.gz $ID.gvcf.gz.tbi"
 
 # HVMEM will be read and used to request hvmem for the script
-HVMEM=8G
-TMEM=8G
+# HVMEM=8G
+# TMEM=8G
+# HVMEM=12G
+# TMEM=12G
+HVMEM=16G
+TMEM=16G
 
 # need more memory to run java
 
 NCORES=6
 SCRATCH=1G
-NHOURS=24
+NHOURS=84
+# 28 was not enough
 
 
 # COMMANDS must be at end of script and give set of commands to get from input to output files
@@ -76,7 +81,8 @@ tempScript=$ID.tempScript.sh
 # lines below will be read and then written to script file with: echo "$line" >> $scriptname
 
 echo #!/bin/bash > $tempScript 
-echo $java -Xmx6g -jar $GATK \\\\>> $tempScript
+# echo $java -Xmx6g -jar $GATK \\\\>> $tempScript
+echo $java -Xmx8g -jar $GATK \\\\>> $tempScript
 echo -R $fasta  \\\\>> $tempScript
 echo -T CombineGVCFs  \\\\>> $tempScript 
 # did also have     -L $chr \\ 

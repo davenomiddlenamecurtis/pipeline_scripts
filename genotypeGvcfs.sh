@@ -99,7 +99,7 @@ ls -l
 
 # checks here
 
-for f in $outfiles
+for f in $OUTPUTFILES
 do
 	mv $tempFolder/\$f $outputFolder/\$f
 done
